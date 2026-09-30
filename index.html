@@ -1,10 +1,12 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
+
+<head>
     <meta charset="UTF-8" />
     <title>Teachinder</title>
-  </head>
-  <body>
+</head>
+
+<body>
     <header>
         <img src="logo.png" alt="Teachinder Logo" />
         <form>
@@ -20,10 +22,118 @@
         <button>Add teacher</button>
     </header>
     <main>
+        <section class="top-teachers">
+            <h2>Top Teachers</h2>
 
+            <form class="filters">
+                <label>Age
+                    <select>
+                        <option>18-31</option>
+                    </select>
+                </label>
+                <label>Region
+                    <select>
+                        <option>Europe</option>
+                    </select>
+                </label>
+                <label>Sex
+                    <select>
+                        <option>Male</option>
+                    </select>
+                </label>
+                <label>
+                    <input type="checkbox" /> Only with photo
+                </label>
+                <label>
+                    <input type="checkbox" /> Only favorites
+                </label>
+            </form>
+
+            <div class="teachers-grid">
+                <article class="teacher-card">
+                    <img src="ihor.jpg" alt="Ihor Tkachuk" />
+                    <h3>Ihor Tkachuk</h3>
+                    <p class="speciality">Chemistry</p>
+                    <p class="country">Ukraine</p>
+                </article>
+
+                <article class="teacher-card">
+                    <div class="avatar-initials">A.M</div>
+                    <h3>Anna Muzychuk</h3>
+                    <p class="speciality">Chess</p>
+                    <p class="country">Belarus</p>
+                </article>
+
+            </div>
+        </section>
+
+        <section class="statistics">
+            <h2>Statistics</h2>
+
+            <table>
+                <thead>
+                    <tr>
+                        <th>Name <span class="sort-arrow">&darr;</span></th>
+                        <th>Speciality <span class="sort-arrow">&darr;</span></th>
+                        <th>Age <span class="sort-arrow">&darr;</span></th>
+                        <th>Gender <span class="sort-arrow">&darr;</span></th>
+                        <th>Nationality <span class="sort-arrow">&darr;</span></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Daisy Alexander</td>
+                        <td>Chemistry</td>
+                        <td>28</td>
+                        <td>Female</td>
+                        <td>Vietnam</td>
+                    </tr>
+                    <tr>
+                        <td>Julia Bradley</td>
+                        <td>Math</td>
+                        <td>26</td>
+                        <td>Female</td>
+                        <td>USA</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <div class="pagination">
+                <a href="#">1</a>
+                <a href="#">2</a>
+                <a href="#">3</a>
+                <span>...</span>
+                <a href="#">Last</a>
+            </div>
+        </section>
+
+        <section class="favorites">
+            <h2>Favorites</h2>
+
+            <div class="slider-container">
+                <button class="slider-arrow left-arrow">&lt;</button>
+
+                <div class="favorites-grid">
+                    <article class="teacher-card">
+                        <img src="ihor.jpg" alt="Ihor Tkachuk" />
+                        <h3>Ihor Tkachuk</h3>
+                        <p class="country">Ukraine</p>
+                    </article>
+
+                    <article class="teacher-card">
+                        <div class="avatar-initials">A.M</div>
+                        <h3>Anna Makarevich</h3>
+                        <p class="country">Belarus</p>
+                    </article>
+                </div>
+
+                <button class="slider-arrow right-arrow">&gt;</button>
+            </div>
+        </section>
     </main>
     <footer>
 
     </footer>
-  </body>
+</body>
+
 </html>
