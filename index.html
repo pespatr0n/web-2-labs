@@ -9,20 +9,28 @@
 
 <body>
     <header>
-        <img src="logo.png" alt="Teachinder Logo" />
-        <form>
-            <input type="text" placeholder="Name, note or age to search" />
-            <button>Search</button>
-        </form>
-        <nav>
-            <a href="#">Teachers</a>
-            <a href="#">Statistics</a>
-            <a href="#">Favorites</a>
-            <a href="#">About</a>
-        </nav>
-        <button>Add teacher</button>
+        <div class="header-top">
+            <a href="#" class="logo">Teachinder</a>
+            <form class="search-group">
+                <input type="text" placeholder="Name, note or age to search" />
+                <button type="button">Search</button>
+            </form>
+        </div>
+        
+        <div class="header-bottom">
+            <nav>
+                <a href="#">Teachers</a>
+                <a href="#">Statistics</a>
+                <a href="#">Favorites</a>
+                <a href="#">About</a>
+            </nav>
+            <button class="add-btn">Add teacher</button>
+        </div>
     </header>
+    
     <main>
+        <div class="section-separator"></div>
+
         <section class="top-teachers">
             <h2>Top Teachers</h2>
 
@@ -52,21 +60,24 @@
 
             <div class="teachers-grid">
                 <article class="teacher-card">
-                    <img src="ihor.jpg" alt="Ihor Tkachuk" />
+                    <div class="img-wrapper">
+                        <img src="img/person1.jpg" alt="Ihor Tkachuk" />
+                    </div>
                     <h3>Ihor Tkachuk</h3>
                     <p class="speciality">Chemistry</p>
                     <p class="country">Ukraine</p>
                 </article>
 
                 <article class="teacher-card">
-                    <div class="avatar-initials">A.M</div>
+                    <div class="avatar-initials"><span>A.M</span></div>
                     <h3>Anna Muzychuk</h3>
                     <p class="speciality">Chess</p>
                     <p class="country">Belarus</p>
                 </article>
-
             </div>
         </section>
+
+        <div class="section-separator"></div>
 
         <section class="statistics">
             <h2>Statistics</h2>
@@ -108,6 +119,8 @@
             </div>
         </section>
 
+        <div class="section-separator"></div>
+
         <section class="favorites">
             <h2>Favorites</h2>
 
@@ -116,13 +129,15 @@
 
                 <div class="favorites-grid">
                     <article class="teacher-card">
-                        <img src="ihor.jpg" alt="Ihor Tkachuk" />
+                        <div class="img-wrapper">
+                            <img src="img/person1.jpg" alt="Ihor Tkachuk" />
+                        </div>
                         <h3>Ihor Tkachuk</h3>
                         <p class="country">Ukraine</p>
                     </article>
 
                     <article class="teacher-card">
-                        <div class="avatar-initials">A.M</div>
+                        <div class="avatar-initials"><span>A.M</span></div>
                         <h3>Anna Makarevich</h3>
                         <p class="country">Belarus</p>
                     </article>
@@ -132,12 +147,11 @@
             </div>
         </section>
     </main>
+    
     <footer>
         <div class="footer-text">
             <p>Lorem ipsum dolor sit amet, consectetur adipisicing elit. A atque facere, hic impedit itaque molestiae sit tempore? Ea in mollitia natus rerum voluptates. Ea ex excepturi facere tempora. Aliquid asperiores hic impedit iusto natus quaerat ratione sit? Culpa iusto optio voluptas voluptate. Enim eveniet fugit iure maiores molestiae, praesentium quia.</p>
-            
             <p>Lorem ipsum dolor sit amet, consectetur adipisicing elit. Aliquam eligendi illum in inventore ipsum odio officiis omnis quisquam sed tempora?</p>
-            
             <p>Lorem ipsum dolor sit amet, consectetur adipisicing elit. A atque esse expedita id iusto mollitia, odit sint ullam veritatis vero?</p>
         </div>
 
@@ -148,35 +162,34 @@
                 <a href="#">Favorites</a>
                 <a href="#">About</a>
             </nav>
-            <button class="add-teacher-btn">Add teacher</button>
+            <button class="add-btn">Add teacher</button>
         </div>
     </footer>
 
     <div class="popup-overlay" id="info-popup">
         <section class="popup-content info-popup-content">
-            <div class="popup-header">
+            <div class="popup-header dark-header">
                 <h2>Teacher Info</h2>
                 <button class="close-btn" aria-label="Close">&times;</button>
             </div>
             
             <div class="teacher-details">
                 <div class="teacher-profile-top">
-                    <img src="ihor-large.jpg" alt="Ihor Tkachuk" class="profile-photo-large" />
+                    <img src="img/person1.jpg" alt="Ihor Tkachuk" class="profile-photo-large" />
                     <div class="profile-info">
                         <div class="name-row">
                             <h3>Ihor Tkachuk</h3>
-                            <button class="star-btn" aria-label="Add to favorites">&#9734;</button>
+                            <button class="star-btn" aria-label="Add to favorites">&#10025;</button> 
                         </div>
                         <p class="speciality-bold">Chemistry</p>
-                        <p>Kyiv, Ukraine</p>
-                        <p>35, Male</p>
-                        <a href="mailto:ihor_tkachuk@domain.com">ihor_tkachuk@domain.com</a>
-                        <p>+380964993252</p>
+                        <p class="info-line">Kyiv, Ukraine</p>
+                        <p class="info-line">35, Male</p>
+                        <a href="mailto:ihor_tkachuk@domain.com" class="info-link">ihor_tkachuk@domain.com</a>
+                        <p class="info-line">+380964993252</p>
                     </div>
                 </div>
                 
                 <p class="teacher-description">Lorem ipsum dolor sit amet, consectetur adipisicing elit. Ab autem consectetur culpa cumque, distinctio dolor dolore dolorem doloremque ea explicabo facilis nam nesciunt nisi pariatur perspiciatis porro quis similique temporibus veniam veritatis? A ab ad, aliquam amet consequatur cupiditate debitis deserunt doloribus dolorum earum eius eos minus nostrum odit omnis perferendis...</p>
-                
                 <a href="#" class="toggle-map">toggle map</a>
             </div>
         </section>
@@ -184,7 +197,7 @@
 
     <div class="popup-overlay" id="add-popup">
         <section class="popup-content add-popup-content">
-            <div class="popup-header">
+            <div class="popup-header dark-header">
                 <h2>Add Teacher</h2>
                 <button class="close-btn" aria-label="Close">&times;</button>
             </div>
@@ -251,10 +264,9 @@
                     <textarea rows="4"></textarea>
                 </label>
                 
-                <button type="submit" class="submit-btn-large">Add</button>
+                <button type="submit" class="submit-btn full-width-btn">Add</button>
             </form>
         </section>
     </div>
 </body>
-
 </html>
