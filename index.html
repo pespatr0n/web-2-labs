@@ -150,6 +150,110 @@
             <button class="add-teacher-btn">Add teacher</button>
         </div>
     </footer>
+
+    <div class="popup-overlay" id="info-popup">
+        <section class="popup-content info-popup-content">
+            <div class="popup-header">
+                <h2>Teacher Info</h2>
+                <button class="close-btn" aria-label="Close">&times;</button>
+            </div>
+            
+            <div class="teacher-details">
+                <div class="teacher-profile-top">
+                    <img src="ihor-large.jpg" alt="Ihor Tkachuk" class="profile-photo-large" />
+                    <div class="profile-info">
+                        <div class="name-row">
+                            <h3>Ihor Tkachuk</h3>
+                            <button class="star-btn" aria-label="Add to favorites">&#9734;</button>
+                        </div>
+                        <p class="speciality-bold">Chemistry</p>
+                        <p>Kyiv, Ukraine</p>
+                        <p>35, Male</p>
+                        <a href="mailto:ihor_tkachuk@domain.com">ihor_tkachuk@domain.com</a>
+                        <p>+380964993252</p>
+                    </div>
+                </div>
+                
+                <p class="teacher-description">Lorem ipsum dolor sit amet, consectetur adipisicing elit. Ab autem consectetur culpa cumque, distinctio dolor dolore dolorem doloremque ea explicabo facilis nam nesciunt nisi pariatur perspiciatis porro quis similique temporibus veniam veritatis? A ab ad, aliquam amet consequatur cupiditate debitis deserunt doloribus dolorum earum eius eos minus nostrum odit omnis perferendis...</p>
+                
+                <a href="#" class="toggle-map">toggle map</a>
+            </div>
+        </section>
+    </div>
+
+    <div class="popup-overlay" id="add-popup">
+        <section class="popup-content add-popup-content">
+            <div class="popup-header">
+                <h2>Add Teacher</h2>
+                <button class="close-btn" aria-label="Close">&times;</button>
+            </div>
+            
+            <form class="add-teacher-form">
+                <label>
+                    Name
+                    <input type="text" placeholder="Enter name" />
+                </label>
+                
+                <label>
+                    Speciality
+                    <select>
+                        <option>Mathematics</option>
+                        <option>Physics</option>
+                        <option>Chemistry</option>
+                    </select>
+                </label>
+                
+                <div class="form-row">
+                    <label>
+                        Country
+                        <select>
+                            <option>Ukraine</option>
+                        </select>
+                    </label>
+                    <label>
+                        City
+                        <input type="text" />
+                    </label>
+                </div>
+                
+                <div class="form-row">
+                    <label>
+                        Email
+                        <input type="email" />
+                    </label>
+                    <label>
+                        Phone
+                        <input type="tel" />
+                    </label>
+                </div>
+                
+                <label>
+                    Date of birth
+                    <input type="date" />
+                </label>
+                
+                <div class="form-row align-center">
+                    <div class="sex-radio-group">
+                        <span>Sex</span>
+                        <label><input type="radio" name="sex" value="male" /> Male</label>
+                        <label><input type="radio" name="sex" value="female" /> Female</label>
+                    </div>
+                    
+                    <label class="color-picker-label">
+                        Background color
+                        <input type="color" value="#ffffff" />
+                    </label>
+                </div>
+                
+                <label>
+                    Notes (optional)
+                    <textarea rows="4"></textarea>
+                </label>
+                
+                <button type="submit" class="submit-btn-large">Add</button>
+            </form>
+        </section>
+    </div>
 </body>
 
 </html>
