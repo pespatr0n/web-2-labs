@@ -169,3 +169,22 @@ const findUser = (usersArray, searchField, searchValue) => {
 const foundUser = findUser(finalUsersArray, 'full_name', 'Norbert');
 console.log("foundUser: ");
 console.log(foundUser);
+
+//task 6
+
+const getPercentage = (usersArray, condition) => {
+    if (usersArray.length === 0) return 0;
+
+    let count = 0;
+    for (let user of usersArray) {
+        if (condition(user)) {
+            count++;
+        }
+    }
+
+    return (count / usersArray.length) * 100;
+};
+
+const percentage = getPercentage(finalUsersArray, user => user.age > 30);
+console.log("Percentage of users older than 30: ");
+console.log(percentage);
