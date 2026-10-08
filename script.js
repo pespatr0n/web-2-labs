@@ -129,3 +129,25 @@ const criteria = {
 const filteredUsers = filterUsers(finalUsersArray, criteria);
 console.log("filteredUsers: ");
 console.log(filteredUsers);
+
+//task 4
+const sortUsers = (usersArray, sortBy, order) => {
+    return [...usersArray].sort((a, b) => {
+        if (a[sortBy] < b[sortBy]) {
+            if (order === 'desc') return 1;
+            return -1;
+        }
+        if (a[sortBy] > b[sortBy]) {
+            if (order === 'desc') return -1;
+            return 1;
+        }
+        return 0;
+    });
+};
+
+const sortedByAgeDesc = sortUsers(finalUsersArray, 'age', 'desc');
+console.log("sortedByAgeDesc: ");
+console.log(sortedByAgeDesc);
+const sortedByAgeAsc = sortUsers(finalUsersArray, 'age', 'asc');
+console.log("sortedByAgeAsc: ");
+console.log(sortedByAgeAsc);
