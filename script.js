@@ -107,3 +107,25 @@ const validateUser = (user) => {
 const validUsers = finalUsersArray.filter(validateUser);
 console.log("validUsers: ");
 console.log(validUsers);
+
+//task 3
+
+const filterUsers = (usersArray, searchParams) => {
+    return usersArray.filter(user => {
+        for (let key in searchParams) {
+            if (user[key] !== searchParams[key]) {
+                return false;
+            }
+        }
+        return true; 
+    });
+};
+
+const criteria = {
+    country: "Germany",
+    gender: "male"
+};
+
+const filteredUsers = filterUsers(finalUsersArray, criteria);
+console.log("filteredUsers: ");
+console.log(filteredUsers);
