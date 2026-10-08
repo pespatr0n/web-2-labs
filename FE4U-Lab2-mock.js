@@ -34,7 +34,7 @@ const randomUserMock = [
     nat: "DE",
   },
   {
-    gender: "male",
+    gender: "Male",
     name: { title: "Mr", first: "Claude", last: "Payne" },
     location: {
       street: { number: 939, name: "Church Road" },
