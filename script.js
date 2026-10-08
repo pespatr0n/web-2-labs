@@ -62,4 +62,48 @@ const mergeAndFormatUsers = (mockUsers, extraUsers) => {
 };
 
 const finalUsersArray = mergeAndFormatUsers(randomUserMock, additionalUsers);
+console.log("finalUsersArray: ");
 console.log(finalUsersArray);
+
+//task 2
+
+const validateUser = (user) => {
+    const isCapitalizedString = (value) => {
+        if (value === "") return true; 
+        return typeof value === 'string' && value.length > 0 && value[0] === value[0].toUpperCase();
+    };
+
+    const stringFields = ['full_name', 'gender', 'note', 'state', 'city', 'country'];
+    for (let field of stringFields) {
+        if (!isCapitalizedString(user[field])) {
+            return false;
+        }
+    }
+
+    if (typeof user.age !== 'number' || isNaN(user.age)) {
+        return false;
+    }
+
+    if (typeof user.email !== 'string' || !user.email.includes('@')) {
+        return false;
+    }
+
+
+    if (typeof user.phone !== 'string' || user.phone.trim() === '') {
+        return false;
+    }
+
+    const allowedChars = "0123456789 +-()";
+    for (let i = 0; i < user.phone.length; i++) {
+        if (!allowedChars.includes(user.phone[i])) {
+            return false;
+        }
+    }
+
+    return true;
+};
+
+
+const validUsers = finalUsersArray.filter(validateUser);
+console.log("validUsers: ");
+console.log(validUsers);
