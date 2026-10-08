@@ -151,3 +151,21 @@ console.log(sortedByAgeDesc);
 const sortedByAgeAsc = sortUsers(finalUsersArray, 'age', 'asc');
 console.log("sortedByAgeAsc: ");
 console.log(sortedByAgeAsc);
+
+//task 5
+
+const findUser = (usersArray, searchField, searchValue) => {
+    return usersArray.find(user => {
+        const value = user[searchField];
+
+        if (typeof value === 'string' && typeof searchValue === 'string') {
+            return value.toLowerCase().includes(searchValue.toLowerCase());
+        }
+
+        return value === searchValue;
+    });
+};
+
+const foundUser = findUser(finalUsersArray, 'full_name', 'Norbert');
+console.log("foundUser: ");
+console.log(foundUser);
