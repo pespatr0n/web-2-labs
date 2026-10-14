@@ -1,3 +1,5 @@
+import { randomUserMock, additionalUsers } from './FE4U-Lab2-mock.js';
+
 const COURSES = [
     "Mathematics", "Physics", "English", "Computer Science",
     "Dancing", "Chess", "Biology", "Chemistry",
