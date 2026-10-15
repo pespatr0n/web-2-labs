@@ -5,14 +5,26 @@ import TeacherList from './components/TeacherList.jsx';
 import TeacherInfoPopup from './components/TeacherInfoPopup.jsx';
 import Statistics from './components/Statistics.jsx';
 
-function Header() {
+function Header({ onSearch }) {
+    const [query, setQuery] = useState('');
+
+    const submitSearch = (event) => {
+        event.preventDefault();
+        onSearch(query.trim().toLowerCase());
+    };
+
     return (
     <header>
         <div className="header-top">
             <a href="#" className="logo">Teachinder</a>
-            <form className="search-group">
-                <input type="text" placeholder="Name, note or age to search" />
-                <button type="button">Search</button>
+            <form className="search-group" onSubmit={submitSearch}>
+                <input
+                    type="text"
+                    placeholder="Name, note or age to search"
+                    value={query}
+                    onChange={event => setQuery(event.target.value)}
+                />
+                <button type="submit">Search</button>
             </form>
         </div>
         
@@ -29,7 +41,7 @@ function Header() {
     );
 }
 
-function Main({ teachers, onSelectTeacher }) {
+function Main({ teachers, onSelectTeacher, search }) {
     const [country, setCountry] = useState('');
     const [ageRange, setAgeRange] = useState('');
     const [gender, setGender] = useState('');
@@ -47,6 +59,14 @@ function Main({ teachers, onSelectTeacher }) {
     const countries = [...new Set(teachers.map(teacher => teacher.country).filter(Boolean))].sort();
     const [minAge, maxAge = Infinity] = ageRange.split('-').map(Number);
     const filteredTeachers = teachers.filter(teacher => {
+        if (
+            search &&
+            !teacher.full_name.toLowerCase().includes(search) &&
+            !teacher.note.toLowerCase().includes(search) &&
+            teacher.age !== Number(search)
+        ) {
+            return false;
+        }
         if (country && teacher.country !== country) return false;
         if (gender && teacher.gender !== gender) return false;
         if (onlyFavorites && !teacher.favorite) return false;
@@ -228,6 +248,7 @@ function AddTeacherPopup() {
 
 export default function App() {
     const [teachers, setTeachers] = useState(() => mergeAndFormatUsers(randomUserMock, additionalUsers));
+    const [search, setSearch] = useState('');
     const [selectedTeacherId, setSelectedTeacherId] = useState(null);
     const selectedTeacher = teachers.find(teacher => teacher.id === selectedTeacherId);
 
@@ -239,8 +260,8 @@ export default function App() {
 
     return (
         <>
-            <Header />
-            <Main teachers={teachers} onSelectTeacher={setSelectedTeacherId} />
+            <Header onSearch={setSearch} />
+            <Main teachers={teachers} onSelectTeacher={setSelectedTeacherId} search={search} />
             <Footer />
             {selectedTeacher && (
                 <TeacherInfoPopup
