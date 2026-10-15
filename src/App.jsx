@@ -29,6 +29,23 @@ function Header() {
 }
 
 function Main({ teachers, onSelectTeacher }) {
+    const [country, setCountry] = useState('');
+    const [ageRange, setAgeRange] = useState('');
+    const [gender, setGender] = useState('');
+    const [onlyFavorites, setOnlyFavorites] = useState(false);
+
+    const countries = [...new Set(teachers.map(teacher => teacher.country).filter(Boolean))].sort();
+    const [minAge, maxAge = Infinity] = ageRange.split('-').map(Number);
+    const filteredTeachers = teachers.filter(teacher => {
+        if (country && teacher.country !== country) return false;
+        if (gender && teacher.gender !== gender) return false;
+        if (onlyFavorites && !teacher.favorite) return false;
+        if (ageRange && (!Number.isFinite(teacher.age) || teacher.age < minAge || teacher.age > maxAge)) {
+            return false;
+        }
+        return true;
+    });
+
     return (
     <main>
         <div className="section-separator"></div>
@@ -38,29 +55,39 @@ function Main({ teachers, onSelectTeacher }) {
 
             <form className="filters">
                 <label>Age
-                    <select>
-                        <option>18-31</option>
+                    <select value={ageRange} onChange={event => setAgeRange(event.target.value)}>
+                        <option value="">All ages</option>
+                        <option value="0-17">Under 18</option>
+                        <option value="18-31">18-31</option>
+                        <option value="32-45">32-45</option>
+                        <option value="46-60">46-60</option>
+                        <option value="61">61+</option>
                     </select>
                 </label>
-                <label>Region
-                    <select>
-                        <option>Europe</option>
+                <label>Country
+                    <select value={country} onChange={event => setCountry(event.target.value)}>
+                        <option value="">All countries</option>
+                        {countries.map(country => (
+                            <option key={country} value={country}>{country}</option>
+                        ))}
                     </select>
                 </label>
                 <label>Sex
-                    <select>
-                        <option>Male</option>
+                    <select value={gender} onChange={event => setGender(event.target.value)}>
+                        <option value="">All</option>
+                        <option value="male">Male</option>
+                        <option value="female">Female</option>
                     </select>
                 </label>
                 <label>
                     <input type="checkbox" /> Only with photo
                 </label>
                 <label>
-                    <input type="checkbox" /> Only favorites
+                    <input type="checkbox" checked={onlyFavorites} onChange={event => setOnlyFavorites(event.target.checked)} /> Only favorites
                 </label>
             </form>
 
-            <TeacherList teachers={teachers} onSelectTeacher={onSelectTeacher} />
+            <TeacherList teachers={filteredTeachers} onSelectTeacher={onSelectTeacher} />
         </section>
 
         <div className="section-separator"></div>
