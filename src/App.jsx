@@ -3,6 +3,7 @@ import { randomUserMock, additionalUsers } from '../FE4U-Lab2-mock.js';
 import { mergeAndFormatUsers } from './utils/teachers.js';
 import TeacherList from './components/TeacherList.jsx';
 import TeacherInfoPopup from './components/TeacherInfoPopup.jsx';
+import Statistics from './components/Statistics.jsx';
 
 function Header() {
     return (
@@ -92,45 +93,7 @@ function Main({ teachers, onSelectTeacher }) {
 
         <div className="section-separator"></div>
 
-        <section className="statistics">
-            <h2>Statistics</h2>
-
-            <table>
-                <thead>
-                    <tr>
-                        <th>Name <span className="sort-arrow">&darr;</span></th>
-                        <th>Speciality <span className="sort-arrow">&darr;</span></th>
-                        <th>Age <span className="sort-arrow">&darr;</span></th>
-                        <th>Gender <span className="sort-arrow">&darr;</span></th>
-                        <th>Nationality <span className="sort-arrow">&darr;</span></th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr>
-                        <td>Daisy Alexander</td>
-                        <td>Chemistry</td>
-                        <td>28</td>
-                        <td>Female</td>
-                        <td>Vietnam</td>
-                    </tr>
-                    <tr>
-                        <td>Julia Bradley</td>
-                        <td>Math</td>
-                        <td>26</td>
-                        <td>Female</td>
-                        <td>USA</td>
-                    </tr>
-                </tbody>
-            </table>
-
-            <div className="pagination">
-                <a href="#">1</a>{' '}
-                <a href="#">2</a>{' '}
-                <a href="#">3</a>{' '}
-                <span>...</span>{' '}
-                <a href="#">Last</a>
-            </div>
-        </section>
+        <Statistics teachers={teachers} />
 
         <div className="section-separator"></div>
 

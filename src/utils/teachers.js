@@ -206,11 +206,25 @@ export const filterUsers = (usersArray, searchParams) => {
 
 export const sortUsers = (usersArray, sortBy, order) => {
     return [...usersArray].sort((a, b) => {
-        if (a[sortBy] < b[sortBy]) {
+        let first = a[sortBy];
+        let second = b[sortBy];
+
+        const firstMissing = first === undefined || first === null || first === '';
+        const secondMissing = second === undefined || second === null || second === '';
+        if (firstMissing && secondMissing) return 0;
+        if (firstMissing) return 1;
+        if (secondMissing) return -1;
+
+        if (typeof first === 'string' && typeof second === 'string') {
+            first = first.toLowerCase();
+            second = second.toLowerCase();
+        }
+
+        if (first < second) {
             if (order === 'desc') return 1;
             return -1;
         }
-        if (a[sortBy] > b[sortBy]) {
+        if (first > second) {
             if (order === 'desc') return -1;
             return 1;
         }
