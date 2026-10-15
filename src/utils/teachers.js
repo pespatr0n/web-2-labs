@@ -42,7 +42,7 @@ export const formatUser = (user) => {
     const coordinates = user.location?.coordinates || user.coordinates;
     const timezone = user.location?.timezone || user.timezone;
     const b_date = user.dob?.date || user.b_day;
-    const age = user.dob?.age ?? calculateAge(b_date);
+    const age = user.dob?.age ?? user.age ?? calculateAge(b_date);
     const picture_large = user.picture?.large || user.picture_large || null;
     const picture_thumbnail = user.picture?.thumbnail || user.picture_thumbnail || null;
     const id = user.login?.uuid || user.id;
@@ -66,22 +66,65 @@ export const formatUser = (user) => {
 
         id: String(id),
         favorite: typeof user.favorite === 'boolean' ? user.favorite : false,
-        course: getRandomCourse(),
+        course: user.course ?? getRandomCourse(),
         bg_color: typeof user.bg_color === 'string' ? user.bg_color : "#ffffff", // Дефолтний колір
         note: typeof user.note === 'string' ? user.note : ""
     };
 };
 
+const getUserFields = (user) => {
+    const { name, location, dob, picture, login, ...fields } = user;
+
+    return {
+        ...fields,
+        full_name: user.full_name ?? (name ? `${name.first ?? ''} ${name.last ?? ''}`.trim() : undefined),
+        title: name?.title ?? user.title,
+        city: location?.city ?? user.city,
+        state: location?.state ?? user.state,
+        country: location?.country ?? user.country,
+        postcode: location?.postcode ?? user.postcode,
+        coordinates: location?.coordinates ?? user.coordinates,
+        timezone: location?.timezone ?? user.timezone,
+        b_day: dob?.date ?? user.b_day,
+        age: dob?.age ?? user.age,
+        picture_large: picture?.large ?? user.picture_large,
+        picture_thumbnail: picture?.thumbnail ?? user.picture_thumbnail,
+        id: login?.uuid ?? user.id
+    };
+};
+
 export const mergeAndFormatUsers = (mockUsers, extraUsers) => {
-    const allUsers = [...mockUsers, ...extraUsers].map(formatUser);
+    const mergedUsers = [];
+    const getEmail = (user) => typeof user.email === 'string' ? user.email.trim().toLowerCase() : '';
+    const getId = (user) => {
+        if (typeof user.id !== 'string' && typeof user.id !== 'number') return '';
+        return String(user.id).trim();
+    };
 
-    const uniqueUsersMap = new Map();
+    for (const user of [...mockUsers, ...extraUsers]) {
+        const fields = getUserFields(user);
+        const email = getEmail(fields);
+        const id = getId(fields);
+        let index = email ? mergedUsers.findIndex(existing => getEmail(existing) === email) : -1;
 
-    allUsers.forEach(user => {
-        uniqueUsersMap.set(user.email, user);
-    });
+        if (index === -1 && id) {
+            index = mergedUsers.findIndex(existing =>
+                (!email || !getEmail(existing)) && getId(existing) === id
+            );
+        }
 
-    return Array.from(uniqueUsersMap.values());
+        const updates = Object.fromEntries(
+            Object.entries(fields).filter(([, value]) => value !== undefined && value !== null)
+        );
+
+        if (index === -1) {
+            mergedUsers.push(updates);
+        } else {
+            mergedUsers[index] = { ...mergedUsers[index], ...updates };
+        }
+    }
+
+    return mergedUsers.map(formatUser);
 };
 
 export const validateUser = (user) => {
