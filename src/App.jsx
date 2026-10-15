@@ -4,8 +4,9 @@ import { mergeAndFormatUsers } from './utils/teachers.js';
 import TeacherList from './components/TeacherList.jsx';
 import TeacherInfoPopup from './components/TeacherInfoPopup.jsx';
 import Statistics from './components/Statistics.jsx';
+import AddTeacherPopup from './components/AddTeacherPopup.jsx';
 
-function Header({ onSearch }) {
+function Header({ onSearch, onAddTeacher }) {
     const [query, setQuery] = useState('');
 
     const submitSearch = (event) => {
@@ -35,7 +36,7 @@ function Header({ onSearch }) {
                 <a href="#">Favorites</a>
                 <a href="#">About</a>
             </nav>
-            <button className="add-btn">Add teacher</button>
+            <button className="add-btn" onClick={onAddTeacher}>Add teacher</button>
         </div>
     </header>
     );
@@ -146,7 +147,7 @@ function Main({ teachers, onSelectTeacher, search }) {
     );
 }
 
-function Footer() {
+function Footer({ onAddTeacher }) {
     return (
     <footer>
         <div className="footer-text">
@@ -162,95 +163,24 @@ function Footer() {
                 <a href="#">Favorites</a>
                 <a href="#">About</a>
             </nav>
-            <button className="add-btn">Add teacher</button>
+            <button className="add-btn" onClick={onAddTeacher}>Add teacher</button>
         </div>
     </footer>
-    );
-}
-
-function AddTeacherPopup() {
-    return (
-    <div className="popup-overlay" id="add-popup">
-        <section className="popup-content add-popup-content">
-            <div className="popup-header dark-header">
-                <h2>Add Teacher</h2>
-                <button className="close-btn" aria-label="Close">&times;</button>
-            </div>
-            
-            <form className="add-teacher-form">
-                <label>
-                    Name
-                    <input type="text" placeholder="Enter name" />
-                </label>
-                
-                <label>
-                    Speciality
-                    <select>
-                        <option>Mathematics</option>
-                        <option>Physics</option>
-                        <option>Chemistry</option>
-                    </select>
-                </label>
-                
-                <div className="form-row">
-                    <label>
-                        Country
-                        <select>
-                            <option>Ukraine</option>
-                        </select>
-                    </label>
-                    <label>
-                        City
-                        <input type="text" />
-                    </label>
-                </div>
-                
-                <div className="form-row">
-                    <label>
-                        Email
-                        <input type="email" />
-                    </label>
-                    <label>
-                        Phone
-                        <input type="tel" />
-                    </label>
-                </div>
-                
-                <label>
-                    Date of birth
-                    <input type="date" />
-                </label>
-                
-                <div className="form-row align-center">
-                    <div className="sex-radio-group">
-                        <span>Sex</span>
-                        <label><input type="radio" name="sex" value="male" /> Male</label>
-                        <label><input type="radio" name="sex" value="female" /> Female</label>
-                    </div>
-                    
-                    <label className="color-picker-label">
-                        Background color
-                        <input type="color" defaultValue="#ffffff" />
-                    </label>
-                </div>
-                
-                <label>
-                    Notes (optional)
-                    <textarea rows="4"></textarea>
-                </label>
-                
-                <button type="submit" className="submit-btn full-width-btn">Add</button>
-            </form>
-        </section>
-    </div>
     );
 }
 
 export default function App() {
     const [teachers, setTeachers] = useState(() => mergeAndFormatUsers(randomUserMock, additionalUsers));
     const [search, setSearch] = useState('');
+    const [addPopupOpen, setAddPopupOpen] = useState(false);
+    const countries = [...new Set(['Ukraine', ...teachers.map(teacher => teacher.country).filter(Boolean)])].sort();
     const [selectedTeacherId, setSelectedTeacherId] = useState(null);
     const selectedTeacher = teachers.find(teacher => teacher.id === selectedTeacherId);
+
+    const addTeacher = (teacher) => {
+        setTeachers(current => [...current, teacher]);
+        setAddPopupOpen(false);
+    };
 
     const toggleFavorite = (id) => {
         setTeachers(current => current.map(teacher =>
@@ -260,9 +190,9 @@ export default function App() {
 
     return (
         <>
-            <Header onSearch={setSearch} />
+            <Header onSearch={setSearch} onAddTeacher={() => setAddPopupOpen(true)} />
             <Main teachers={teachers} onSelectTeacher={setSelectedTeacherId} search={search} />
-            <Footer />
+            <Footer onAddTeacher={() => setAddPopupOpen(true)} />
             {selectedTeacher && (
                 <TeacherInfoPopup
                     teacher={selectedTeacher}
@@ -270,7 +200,13 @@ export default function App() {
                     onToggleFavorite={toggleFavorite}
                 />
             )}
-            <AddTeacherPopup />
+            {addPopupOpen && (
+                <AddTeacherPopup
+                    onClose={() => setAddPopupOpen(false)}
+                    onAddTeacher={addTeacher}
+                    countries={countries}
+                />
+            )}
         </>
     );
 }
