@@ -25,7 +25,7 @@ export const formatUser = (user) => {
     const id = user.login?.uuid || user.id;
 
     return {
-        gender: user.gender,
+        gender: typeof user.gender === 'string' ? user.gender.trim().toLowerCase() : user.gender,
         title: title,
         full_name: fullName,
         city: city,
@@ -67,11 +67,15 @@ export const validateUser = (user) => {
         return typeof value === 'string' && value.length > 0 && value[0] === value[0].toUpperCase();
     };
 
-    const stringFields = ['full_name', 'gender', 'note', 'state', 'city', 'country'];
+    const stringFields = ['full_name', 'note', 'state', 'city', 'country'];
     for (let field of stringFields) {
         if (!isCapitalizedString(user[field])) {
             return false;
         }
+    }
+
+    if (!['male', 'female'].includes(user.gender)) {
+        return false;
     }
 
     if (typeof user.age !== 'number' || isNaN(user.age)) {
