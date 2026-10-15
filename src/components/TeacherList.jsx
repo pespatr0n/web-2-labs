@@ -1,6 +1,6 @@
 import TeacherCard from './TeacherCard.jsx';
 
-export default function TeacherList({ teachers, onSelectTeacher, favorites = false }) {
+export default function TeacherList({ teachers, onSelectTeacher, favorites = false, listRef }) {
     const selectTeacher = (event) => {
         const card = event.target.closest('[data-teacher-id]');
         if (card) onSelectTeacher(card.dataset.teacherId);
@@ -9,6 +9,7 @@ export default function TeacherList({ teachers, onSelectTeacher, favorites = fal
     return (
         <div
             className={favorites ? 'favorites-grid' : 'teachers-grid'}
+            ref={listRef}
             onClick={selectTeacher}
         >
             {teachers.map(teacher => (

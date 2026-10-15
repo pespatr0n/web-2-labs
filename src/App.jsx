@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { randomUserMock, additionalUsers } from '../FE4U-Lab2-mock.js';
 import { mergeAndFormatUsers } from './utils/teachers.js';
 import TeacherList from './components/TeacherList.jsx';
@@ -34,6 +34,15 @@ function Main({ teachers, onSelectTeacher }) {
     const [ageRange, setAgeRange] = useState('');
     const [gender, setGender] = useState('');
     const [onlyFavorites, setOnlyFavorites] = useState(false);
+    const favoritesRef = useRef(null);
+
+    const scrollFavorites = (direction) => {
+        const list = favoritesRef.current;
+        const card = list.querySelector('.teacher-card');
+        if (!card) return;
+
+        list.scrollBy({ left: direction * (card.offsetWidth + 30), behavior: 'smooth' });
+    };
 
     const countries = [...new Set(teachers.map(teacher => teacher.country).filter(Boolean))].sort();
     const [minAge, maxAge = Infinity] = ageRange.split('-').map(Number);
@@ -101,15 +110,16 @@ function Main({ teachers, onSelectTeacher }) {
             <h2>Favorites</h2>
 
             <div className="slider-container">
-                <button className="slider-arrow left-arrow">&lt;</button>
+                <button className="slider-arrow left-arrow" onClick={() => scrollFavorites(-1)}>&lt;</button>
 
                 <TeacherList
                     teachers={teachers.filter(teacher => teacher.favorite)}
                     onSelectTeacher={onSelectTeacher}
+                    listRef={favoritesRef}
                     favorites
                 />
 
-                <button className="slider-arrow right-arrow">&gt;</button>
+                <button className="slider-arrow right-arrow" onClick={() => scrollFavorites(1)}>&gt;</button>
             </div>
         </section>
     </main>
