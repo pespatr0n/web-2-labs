@@ -9,6 +9,29 @@ export const getRandomCourse = () => {
     return COURSES[randomIndex];
 };
 
+export const calculateAge = (birthDate) => {
+    if (!birthDate) return null;
+
+    const birth = new Date(birthDate);
+    const today = new Date();
+
+    if (Number.isNaN(birth.getTime()) || birth > today) {
+        return null;
+    }
+
+    let age = today.getFullYear() - birth.getFullYear();
+    const monthDifference = today.getMonth() - birth.getMonth();
+
+    if (
+        monthDifference < 0 ||
+        (monthDifference === 0 && today.getDate() < birth.getDate())
+    ) {
+        age--;
+    }
+
+    return age;
+};
+
 export const formatUser = (user) => {
     const fullName = user.full_name || `${user.name?.first || ''} ${user.name?.last || ''}`.trim();
     const title = user.name?.title || user.title;
@@ -19,7 +42,7 @@ export const formatUser = (user) => {
     const coordinates = user.location?.coordinates || user.coordinates;
     const timezone = user.location?.timezone || user.timezone;
     const b_date = user.dob?.date || user.b_day;
-    const age = user.dob?.age || null;
+    const age = user.dob?.age ?? calculateAge(b_date);
     const picture_large = user.picture?.large || user.picture_large || null;
     const picture_thumbnail = user.picture?.thumbnail || user.picture_thumbnail || null;
     const id = user.login?.uuid || user.id;
