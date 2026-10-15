@@ -32,6 +32,18 @@ export const calculateAge = (birthDate) => {
     return age;
 };
 
+const getUserId = (user) => {
+    for (const value of [user.login?.uuid, user.id]) {
+        if (typeof value !== 'string' && typeof value !== 'number') continue;
+        if (typeof value === 'number' && !Number.isFinite(value)) continue;
+
+        const id = String(value).trim();
+        if (id && !['undefined', 'null', '[object Object]'].includes(id)) return id;
+    }
+
+    return null;
+};
+
 export const formatUser = (user) => {
     const fullName = user.full_name || `${user.name?.first || ''} ${user.name?.last || ''}`.trim();
     const title = user.name?.title || user.title;
@@ -45,7 +57,7 @@ export const formatUser = (user) => {
     const age = user.dob?.age ?? user.age ?? calculateAge(b_date);
     const picture_large = user.picture?.large || user.picture_large || null;
     const picture_thumbnail = user.picture?.thumbnail || user.picture_thumbnail || null;
-    const id = user.login?.uuid || user.id;
+    const id = getUserId(user) || crypto.randomUUID();
 
     return {
         gender: typeof user.gender === 'string' ? user.gender.trim().toLowerCase() : user.gender,
@@ -64,7 +76,7 @@ export const formatUser = (user) => {
         picture_large: picture_large,
         picture_thumbnail: picture_thumbnail,
 
-        id: String(id),
+        id: id,
         favorite: typeof user.favorite === 'boolean' ? user.favorite : false,
         course: user.course ?? getRandomCourse(),
         bg_color: typeof user.bg_color === 'string' ? user.bg_color : "#ffffff", // Дефолтний колір
@@ -89,27 +101,23 @@ const getUserFields = (user) => {
         age: dob?.age ?? user.age,
         picture_large: picture?.large ?? user.picture_large,
         picture_thumbnail: picture?.thumbnail ?? user.picture_thumbnail,
-        id: login?.uuid ?? user.id
+        id: getUserId(user) || undefined
     };
 };
 
 export const mergeAndFormatUsers = (mockUsers, extraUsers) => {
     const mergedUsers = [];
     const getEmail = (user) => typeof user.email === 'string' ? user.email.trim().toLowerCase() : '';
-    const getId = (user) => {
-        if (typeof user.id !== 'string' && typeof user.id !== 'number') return '';
-        return String(user.id).trim();
-    };
 
     for (const user of [...mockUsers, ...extraUsers]) {
         const fields = getUserFields(user);
         const email = getEmail(fields);
-        const id = getId(fields);
+        const id = getUserId(fields);
         let index = email ? mergedUsers.findIndex(existing => getEmail(existing) === email) : -1;
 
         if (index === -1 && id) {
             index = mergedUsers.findIndex(existing =>
-                (!email || !getEmail(existing)) && getId(existing) === id
+                (!email || !getEmail(existing)) && getUserId(existing) === id
             );
         }
 
@@ -120,11 +128,29 @@ export const mergeAndFormatUsers = (mockUsers, extraUsers) => {
         if (index === -1) {
             mergedUsers.push(updates);
         } else {
-            mergedUsers[index] = { ...mergedUsers[index], ...updates };
+            mergedUsers[index] = {
+                ...mergedUsers[index],
+                ...updates,
+                id: getUserId(mergedUsers[index]) || updates.id
+            };
         }
     }
 
-    return mergedUsers.map(formatUser);
+    const reservedIds = new Set(mergedUsers.map(getUserId).filter(Boolean));
+    const usedIds = new Set();
+
+    return mergedUsers.map(user => {
+        let id = getUserId(user);
+
+        if (!id || usedIds.has(id)) {
+            do {
+                id = crypto.randomUUID();
+            } while (reservedIds.has(id) || usedIds.has(id));
+        }
+
+        usedIds.add(id);
+        return formatUser({ ...user, id });
+    });
 };
 
 export const validateUser = (user) => {
