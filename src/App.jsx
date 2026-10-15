@@ -1,4 +1,8 @@
-import teacherPhoto from '../img/person1.jpg';
+import { useState } from 'react';
+import { randomUserMock, additionalUsers } from '../FE4U-Lab2-mock.js';
+import { mergeAndFormatUsers } from './utils/teachers.js';
+import TeacherList from './components/TeacherList.jsx';
+import TeacherInfoPopup from './components/TeacherInfoPopup.jsx';
 
 function Header() {
     return (
@@ -24,7 +28,7 @@ function Header() {
     );
 }
 
-function Main() {
+function Main({ teachers, onSelectTeacher }) {
     return (
     <main>
         <div className="section-separator"></div>
@@ -56,23 +60,7 @@ function Main() {
                 </label>
             </form>
 
-            <div className="teachers-grid">
-                <article className="teacher-card">
-                    <div className="img-wrapper">
-                        <img src={teacherPhoto} alt="Ihor Tkachuk" />
-                    </div>
-                    <h3>Ihor Tkachuk</h3>
-                    <p className="speciality">Chemistry</p>
-                    <p className="country">Ukraine</p>
-                </article>
-
-                <article className="teacher-card">
-                    <div className="avatar-initials"><span>A.M</span></div>
-                    <h3>Anna Muzychuk</h3>
-                    <p className="speciality">Chess</p>
-                    <p className="country">Belarus</p>
-                </article>
-            </div>
+            <TeacherList teachers={teachers} onSelectTeacher={onSelectTeacher} />
         </section>
 
         <div className="section-separator"></div>
@@ -125,21 +113,11 @@ function Main() {
             <div className="slider-container">
                 <button className="slider-arrow left-arrow">&lt;</button>
 
-                <div className="favorites-grid">
-                    <article className="teacher-card">
-                        <div className="img-wrapper">
-                            <img src={teacherPhoto} alt="Ihor Tkachuk" />
-                        </div>
-                        <h3>Ihor Tkachuk</h3>
-                        <p className="country">Ukraine</p>
-                    </article>
-
-                    <article className="teacher-card">
-                        <div className="avatar-initials"><span>A.M</span></div>
-                        <h3>Anna Makarevich</h3>
-                        <p className="country">Belarus</p>
-                    </article>
-                </div>
+                <TeacherList
+                    teachers={teachers.filter(teacher => teacher.favorite)}
+                    onSelectTeacher={onSelectTeacher}
+                    favorites
+                />
 
                 <button className="slider-arrow right-arrow">&gt;</button>
             </div>
@@ -167,39 +145,6 @@ function Footer() {
             <button className="add-btn">Add teacher</button>
         </div>
     </footer>
-    );
-}
-
-function TeacherInfoPopup() {
-    return (
-    <div className="popup-overlay" id="info-popup">
-        <section className="popup-content info-popup-content">
-            <div className="popup-header dark-header">
-                <h2>Teacher Info</h2>
-                <button className="close-btn" aria-label="Close">&times;</button>
-            </div>
-            
-            <div className="teacher-details">
-                <div className="teacher-profile-top">
-                    <img src={teacherPhoto} alt="Ihor Tkachuk" className="profile-photo-large" />
-                    <div className="profile-info">
-                        <div className="name-row">
-                            <h3>Ihor Tkachuk</h3>
-                            <button className="star-btn" aria-label="Add to favorites">&#10025;</button> 
-                        </div>
-                        <p className="speciality-bold">Chemistry</p>
-                        <p className="info-line">Kyiv, Ukraine</p>
-                        <p className="info-line">35, Male</p>
-                        <a href="mailto:ihor_tkachuk@domain.com" className="info-link">ihor_tkachuk@domain.com</a>
-                        <p className="info-line">+380964993252</p>
-                    </div>
-                </div>
-                
-                <p className="teacher-description">Lorem ipsum dolor sit amet, consectetur adipisicing elit. Ab autem consectetur culpa cumque, distinctio dolor dolore dolorem doloremque ea explicabo facilis nam nesciunt nisi pariatur perspiciatis porro quis similique temporibus veniam veritatis? A ab ad, aliquam amet consequatur cupiditate debitis deserunt doloribus dolorum earum eius eos minus nostrum odit omnis perferendis...</p>
-                <a href="#" className="toggle-map">toggle map</a>
-            </div>
-        </section>
-    </div>
     );
 }
 
@@ -282,12 +227,28 @@ function AddTeacherPopup() {
 }
 
 export default function App() {
+    const [teachers, setTeachers] = useState(() => mergeAndFormatUsers(randomUserMock, additionalUsers));
+    const [selectedTeacherId, setSelectedTeacherId] = useState(null);
+    const selectedTeacher = teachers.find(teacher => teacher.id === selectedTeacherId);
+
+    const toggleFavorite = (id) => {
+        setTeachers(current => current.map(teacher =>
+            teacher.id === id ? { ...teacher, favorite: !teacher.favorite } : teacher
+        ));
+    };
+
     return (
         <>
             <Header />
-            <Main />
+            <Main teachers={teachers} onSelectTeacher={setSelectedTeacherId} />
             <Footer />
-            <TeacherInfoPopup />
+            {selectedTeacher && (
+                <TeacherInfoPopup
+                    teacher={selectedTeacher}
+                    onClose={() => setSelectedTeacherId(null)}
+                    onToggleFavorite={toggleFavorite}
+                />
+            )}
             <AddTeacherPopup />
         </>
     );
