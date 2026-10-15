@@ -47,6 +47,7 @@ function Main({ teachers, onSelectTeacher, search }) {
     const [ageRange, setAgeRange] = useState('');
     const [gender, setGender] = useState('');
     const [onlyFavorites, setOnlyFavorites] = useState(false);
+    const [onlyWithPhoto, setOnlyWithPhoto] = useState(false);
     const favoritesRef = useRef(null);
 
     const scrollFavorites = (direction) => {
@@ -71,6 +72,7 @@ function Main({ teachers, onSelectTeacher, search }) {
         if (country && teacher.country !== country) return false;
         if (gender && teacher.gender !== gender) return false;
         if (onlyFavorites && !teacher.favorite) return false;
+        if (onlyWithPhoto && !teacher.picture_large && !teacher.picture_thumbnail) return false;
         if (ageRange && (!Number.isFinite(teacher.age) || teacher.age < minAge || teacher.age > maxAge)) {
             return false;
         }
@@ -111,7 +113,7 @@ function Main({ teachers, onSelectTeacher, search }) {
                     </select>
                 </label>
                 <label>
-                    <input type="checkbox" /> Only with photo
+                    <input type="checkbox" checked={onlyWithPhoto} onChange={event => setOnlyWithPhoto(event.target.checked)} /> Only with photo
                 </label>
                 <label>
                     <input type="checkbox" checked={onlyFavorites} onChange={event => setOnlyFavorites(event.target.checked)} /> Only favorites
