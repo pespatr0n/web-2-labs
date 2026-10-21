@@ -1,13 +1,31 @@
-import teacherPhoto from '../img/person1.jpg';
+import { useRef, useState } from 'react';
+import { randomUserMock, additionalUsers } from '../FE4U-Lab2-mock.js';
+import { mergeAndFormatUsers } from './utils/teachers.js';
+import TeacherList from './components/TeacherList.jsx';
+import TeacherInfoPopup from './components/TeacherInfoPopup.jsx';
+import Statistics from './components/Statistics.jsx';
+import AddTeacherPopup from './components/AddTeacherPopup.jsx';
 
-function Header() {
+function Header({ onSearch, onAddTeacher }) {
+    const [query, setQuery] = useState('');
+
+    const submitSearch = (event) => {
+        event.preventDefault();
+        onSearch(query.trim().toLowerCase());
+    };
+
     return (
     <header>
         <div className="header-top">
             <a href="#" className="logo">Teachinder</a>
-            <form className="search-group">
-                <input type="text" placeholder="Name, note or age to search" />
-                <button type="button">Search</button>
+            <form className="search-group" onSubmit={submitSearch}>
+                <input
+                    type="text"
+                    placeholder="Name, note or age to search"
+                    value={query}
+                    onChange={event => setQuery(event.target.value)}
+                />
+                <button type="submit">Search</button>
             </form>
         </div>
         
@@ -18,13 +36,49 @@ function Header() {
                 <a href="#">Favorites</a>
                 <a href="#">About</a>
             </nav>
-            <button className="add-btn">Add teacher</button>
+            <button className="add-btn" onClick={onAddTeacher}>Add teacher</button>
         </div>
     </header>
     );
 }
 
-function Main() {
+function Main({ teachers, onSelectTeacher, search }) {
+    const [country, setCountry] = useState('');
+    const [ageRange, setAgeRange] = useState('');
+    const [gender, setGender] = useState('');
+    const [onlyFavorites, setOnlyFavorites] = useState(false);
+    const [onlyWithPhoto, setOnlyWithPhoto] = useState(false);
+    const favoritesRef = useRef(null);
+
+    const scrollFavorites = (direction) => {
+        const list = favoritesRef.current;
+        const card = list.querySelector('.teacher-card');
+        if (!card) return;
+
+        list.scrollBy({ left: direction * (card.offsetWidth + 30), behavior: 'smooth' });
+    };
+
+    const countries = [...new Set(teachers.map(teacher => teacher.country).filter(Boolean))].sort();
+    const [minAge, maxAge = Infinity] = ageRange.split('-').map(Number);
+    const filteredTeachers = teachers.filter(teacher => {
+        if (
+            search &&
+            !teacher.full_name.toLowerCase().includes(search) &&
+            !teacher.note.toLowerCase().includes(search) &&
+            teacher.age !== Number(search)
+        ) {
+            return false;
+        }
+        if (country && teacher.country !== country) return false;
+        if (gender && teacher.gender !== gender) return false;
+        if (onlyFavorites && !teacher.favorite) return false;
+        if (onlyWithPhoto && !teacher.picture_large && !teacher.picture_thumbnail) return false;
+        if (ageRange && (!Number.isFinite(teacher.age) || teacher.age < minAge || teacher.age > maxAge)) {
+            return false;
+        }
+        return true;
+    });
+
     return (
     <main>
         <div className="section-separator"></div>
@@ -34,88 +88,44 @@ function Main() {
 
             <form className="filters">
                 <label>Age
-                    <select>
-                        <option>18-31</option>
+                    <select value={ageRange} onChange={event => setAgeRange(event.target.value)}>
+                        <option value="">All ages</option>
+                        <option value="0-17">Under 18</option>
+                        <option value="18-31">18-31</option>
+                        <option value="32-45">32-45</option>
+                        <option value="46-60">46-60</option>
+                        <option value="61">61+</option>
                     </select>
                 </label>
-                <label>Region
-                    <select>
-                        <option>Europe</option>
+                <label>Country
+                    <select value={country} onChange={event => setCountry(event.target.value)}>
+                        <option value="">All countries</option>
+                        {countries.map(country => (
+                            <option key={country} value={country}>{country}</option>
+                        ))}
                     </select>
                 </label>
                 <label>Sex
-                    <select>
-                        <option>Male</option>
+                    <select value={gender} onChange={event => setGender(event.target.value)}>
+                        <option value="">All</option>
+                        <option value="male">Male</option>
+                        <option value="female">Female</option>
                     </select>
                 </label>
                 <label>
-                    <input type="checkbox" /> Only with photo
+                    <input type="checkbox" checked={onlyWithPhoto} onChange={event => setOnlyWithPhoto(event.target.checked)} /> Only with photo
                 </label>
                 <label>
-                    <input type="checkbox" /> Only favorites
+                    <input type="checkbox" checked={onlyFavorites} onChange={event => setOnlyFavorites(event.target.checked)} /> Only favorites
                 </label>
             </form>
 
-            <div className="teachers-grid">
-                <article className="teacher-card">
-                    <div className="img-wrapper">
-                        <img src={teacherPhoto} alt="Ihor Tkachuk" />
-                    </div>
-                    <h3>Ihor Tkachuk</h3>
-                    <p className="speciality">Chemistry</p>
-                    <p className="country">Ukraine</p>
-                </article>
-
-                <article className="teacher-card">
-                    <div className="avatar-initials"><span>A.M</span></div>
-                    <h3>Anna Muzychuk</h3>
-                    <p className="speciality">Chess</p>
-                    <p className="country">Belarus</p>
-                </article>
-            </div>
+            <TeacherList teachers={filteredTeachers} onSelectTeacher={onSelectTeacher} />
         </section>
 
         <div className="section-separator"></div>
 
-        <section className="statistics">
-            <h2>Statistics</h2>
-
-            <table>
-                <thead>
-                    <tr>
-                        <th>Name <span className="sort-arrow">&darr;</span></th>
-                        <th>Speciality <span className="sort-arrow">&darr;</span></th>
-                        <th>Age <span className="sort-arrow">&darr;</span></th>
-                        <th>Gender <span className="sort-arrow">&darr;</span></th>
-                        <th>Nationality <span className="sort-arrow">&darr;</span></th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr>
-                        <td>Daisy Alexander</td>
-                        <td>Chemistry</td>
-                        <td>28</td>
-                        <td>Female</td>
-                        <td>Vietnam</td>
-                    </tr>
-                    <tr>
-                        <td>Julia Bradley</td>
-                        <td>Math</td>
-                        <td>26</td>
-                        <td>Female</td>
-                        <td>USA</td>
-                    </tr>
-                </tbody>
-            </table>
-
-            <div className="pagination">
-                <a href="#">1</a>{' '}
-                <a href="#">2</a>{' '}
-                <a href="#">3</a>{' '}
-                <span>...</span>{' '}
-                <a href="#">Last</a>
-            </div>
-        </section>
+        <Statistics teachers={teachers} />
 
         <div className="section-separator"></div>
 
@@ -123,32 +133,23 @@ function Main() {
             <h2>Favorites</h2>
 
             <div className="slider-container">
-                <button className="slider-arrow left-arrow">&lt;</button>
+                <button className="slider-arrow left-arrow" onClick={() => scrollFavorites(-1)}>&lt;</button>
 
-                <div className="favorites-grid">
-                    <article className="teacher-card">
-                        <div className="img-wrapper">
-                            <img src={teacherPhoto} alt="Ihor Tkachuk" />
-                        </div>
-                        <h3>Ihor Tkachuk</h3>
-                        <p className="country">Ukraine</p>
-                    </article>
+                <TeacherList
+                    teachers={teachers.filter(teacher => teacher.favorite)}
+                    onSelectTeacher={onSelectTeacher}
+                    listRef={favoritesRef}
+                    favorites
+                />
 
-                    <article className="teacher-card">
-                        <div className="avatar-initials"><span>A.M</span></div>
-                        <h3>Anna Makarevich</h3>
-                        <p className="country">Belarus</p>
-                    </article>
-                </div>
-
-                <button className="slider-arrow right-arrow">&gt;</button>
+                <button className="slider-arrow right-arrow" onClick={() => scrollFavorites(1)}>&gt;</button>
             </div>
         </section>
     </main>
     );
 }
 
-function Footer() {
+function Footer({ onAddTeacher }) {
     return (
     <footer>
         <div className="footer-text">
@@ -164,131 +165,50 @@ function Footer() {
                 <a href="#">Favorites</a>
                 <a href="#">About</a>
             </nav>
-            <button className="add-btn">Add teacher</button>
+            <button className="add-btn" onClick={onAddTeacher}>Add teacher</button>
         </div>
     </footer>
     );
 }
 
-function TeacherInfoPopup() {
-    return (
-    <div className="popup-overlay" id="info-popup">
-        <section className="popup-content info-popup-content">
-            <div className="popup-header dark-header">
-                <h2>Teacher Info</h2>
-                <button className="close-btn" aria-label="Close">&times;</button>
-            </div>
-            
-            <div className="teacher-details">
-                <div className="teacher-profile-top">
-                    <img src={teacherPhoto} alt="Ihor Tkachuk" className="profile-photo-large" />
-                    <div className="profile-info">
-                        <div className="name-row">
-                            <h3>Ihor Tkachuk</h3>
-                            <button className="star-btn" aria-label="Add to favorites">&#10025;</button> 
-                        </div>
-                        <p className="speciality-bold">Chemistry</p>
-                        <p className="info-line">Kyiv, Ukraine</p>
-                        <p className="info-line">35, Male</p>
-                        <a href="mailto:ihor_tkachuk@domain.com" className="info-link">ihor_tkachuk@domain.com</a>
-                        <p className="info-line">+380964993252</p>
-                    </div>
-                </div>
-                
-                <p className="teacher-description">Lorem ipsum dolor sit amet, consectetur adipisicing elit. Ab autem consectetur culpa cumque, distinctio dolor dolore dolorem doloremque ea explicabo facilis nam nesciunt nisi pariatur perspiciatis porro quis similique temporibus veniam veritatis? A ab ad, aliquam amet consequatur cupiditate debitis deserunt doloribus dolorum earum eius eos minus nostrum odit omnis perferendis...</p>
-                <a href="#" className="toggle-map">toggle map</a>
-            </div>
-        </section>
-    </div>
-    );
-}
-
-function AddTeacherPopup() {
-    return (
-    <div className="popup-overlay" id="add-popup">
-        <section className="popup-content add-popup-content">
-            <div className="popup-header dark-header">
-                <h2>Add Teacher</h2>
-                <button className="close-btn" aria-label="Close">&times;</button>
-            </div>
-            
-            <form className="add-teacher-form">
-                <label>
-                    Name
-                    <input type="text" placeholder="Enter name" />
-                </label>
-                
-                <label>
-                    Speciality
-                    <select>
-                        <option>Mathematics</option>
-                        <option>Physics</option>
-                        <option>Chemistry</option>
-                    </select>
-                </label>
-                
-                <div className="form-row">
-                    <label>
-                        Country
-                        <select>
-                            <option>Ukraine</option>
-                        </select>
-                    </label>
-                    <label>
-                        City
-                        <input type="text" />
-                    </label>
-                </div>
-                
-                <div className="form-row">
-                    <label>
-                        Email
-                        <input type="email" />
-                    </label>
-                    <label>
-                        Phone
-                        <input type="tel" />
-                    </label>
-                </div>
-                
-                <label>
-                    Date of birth
-                    <input type="date" />
-                </label>
-                
-                <div className="form-row align-center">
-                    <div className="sex-radio-group">
-                        <span>Sex</span>
-                        <label><input type="radio" name="sex" value="male" /> Male</label>
-                        <label><input type="radio" name="sex" value="female" /> Female</label>
-                    </div>
-                    
-                    <label className="color-picker-label">
-                        Background color
-                        <input type="color" defaultValue="#ffffff" />
-                    </label>
-                </div>
-                
-                <label>
-                    Notes (optional)
-                    <textarea rows="4"></textarea>
-                </label>
-                
-                <button type="submit" className="submit-btn full-width-btn">Add</button>
-            </form>
-        </section>
-    </div>
-    );
-}
-
 export default function App() {
+    const [teachers, setTeachers] = useState(() => mergeAndFormatUsers(randomUserMock, additionalUsers));
+    const [search, setSearch] = useState('');
+    const [addPopupOpen, setAddPopupOpen] = useState(false);
+    const countries = [...new Set(['Ukraine', ...teachers.map(teacher => teacher.country).filter(Boolean)])].sort();
+    const [selectedTeacherId, setSelectedTeacherId] = useState(null);
+    const selectedTeacher = teachers.find(teacher => teacher.id === selectedTeacherId);
+
+    const addTeacher = (teacher) => {
+        setTeachers(current => [...current, teacher]);
+        setAddPopupOpen(false);
+    };
+
+    const toggleFavorite = (id) => {
+        setTeachers(current => current.map(teacher =>
+            teacher.id === id ? { ...teacher, favorite: !teacher.favorite } : teacher
+        ));
+    };
+
     return (
         <>
-            <Header />
-            <Main />
-            <Footer />
-            <TeacherInfoPopup />
-            <AddTeacherPopup />
+            <Header onSearch={setSearch} onAddTeacher={() => setAddPopupOpen(true)} />
+            <Main teachers={teachers} onSelectTeacher={setSelectedTeacherId} search={search} />
+            <Footer onAddTeacher={() => setAddPopupOpen(true)} />
+            {selectedTeacher && (
+                <TeacherInfoPopup
+                    teacher={selectedTeacher}
+                    onClose={() => setSelectedTeacherId(null)}
+                    onToggleFavorite={toggleFavorite}
+                />
+            )}
+            {addPopupOpen && (
+                <AddTeacherPopup
+                    onClose={() => setAddPopupOpen(false)}
+                    onAddTeacher={addTeacher}
+                    countries={countries}
+                />
+            )}
         </>
     );
 }
