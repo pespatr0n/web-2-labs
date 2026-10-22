@@ -205,6 +205,35 @@ export const validateUser = (user) => {
     return { isValid: true, error: null };
 };
 
+export async function fetchTeachers(count, signal) {
+    const response = await fetch(`https://randomuser.me/api/?results=${count}`, { signal });
+
+    if (!response.ok) {
+        throw new Error(`HTTP error: ${response.status}`);
+    }
+
+    const data = await response.json();
+
+    if (data?.error) {
+        throw new Error(data.error);
+    }
+    if (!Array.isArray(data?.results)) {
+        throw new Error('Invalid API response: results must be an array.');
+    }
+
+    const users = data.results
+        .filter(user => user && typeof user === 'object' && !Array.isArray(user))
+        .map(formatUser)
+        .filter(user => validateUser(user).isValid);
+
+    const invalidCount = data.results.length - users.length;
+    if (invalidCount > 0) {
+        console.warn(`Skipped ${invalidCount} invalid API users.`);
+    }
+
+    return users;
+}
+
 export const filterUsers = (usersArray, searchParams) => {
     return usersArray.filter(user => {
         for (let key in searchParams) {

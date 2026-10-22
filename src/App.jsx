@@ -1,5 +1,5 @@
 import { useRef, useState, useEffect } from 'react';
-import { formatUser, validateUser } from './utils/teachers.js';
+import { fetchTeachers } from './utils/teachers.js';
 import TeacherList from './components/TeacherList.jsx';
 import TeacherInfoPopup from './components/TeacherInfoPopup.jsx';
 import Statistics from './components/Statistics.jsx';
@@ -41,7 +41,7 @@ function Header({ onSearch, onAddTeacher }) {
     );
 }
 
-function Main({ teachers, onSelectTeacher, search }) {
+function Main({ teachers, onSelectTeacher, search, onLoadMore, loadingMore, loadMoreError }) {
     const [country, setCountry] = useState('');
     const [ageRange, setAgeRange] = useState('');
     const [gender, setGender] = useState('');
@@ -120,6 +120,12 @@ function Main({ teachers, onSelectTeacher, search }) {
             </form>
 
             <TeacherList teachers={filteredTeachers} onSelectTeacher={onSelectTeacher} />
+            <div className="load-more">
+                <button type="button" onClick={onLoadMore} disabled={loadingMore}>
+                    {loadingMore ? 'Завантаження...' : 'Далі'}
+                </button>
+                {loadMoreError && <p role="alert">{loadMoreError}</p>}
+            </div>
         </section>
 
         <div className="section-separator"></div>
@@ -174,6 +180,9 @@ export default function App() {
     const [teachers, setTeachers] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
+    const [loadingMore, setLoadingMore] = useState(false);
+    const [loadMoreError, setLoadMoreError] = useState('');
+    const loadMoreRequest = useRef(null);
     const [search, setSearch] = useState('');
     const [addPopupOpen, setAddPopupOpen] = useState(false);
     const countries = [...new Set(['Ukraine', ...teachers.map(teacher => teacher.country).filter(Boolean)])].sort();
@@ -185,35 +194,9 @@ export default function App() {
 
         async function loadUsers() {
             try {
-                const response = await fetch('https://randomuser.me/api/?results=50', {
-                    signal: controller.signal
-                });
-
-                if (!response.ok) {
-                    throw new Error(`HTTP error: ${response.status}`);
-                }
-
-                const data = await response.json();
-
-                if (data?.error) {
-                    throw new Error(data.error);
-                }
-
-                if (!Array.isArray(data?.results)) {
-                    throw new Error('Invalid API response: results must be an array.');
-                }
+                const loadedTeachers = await fetchTeachers(50, controller.signal);
 
                 if (!controller.signal.aborted) {
-                    const loadedTeachers = data.results
-                        .filter(user => user && typeof user === 'object' && !Array.isArray(user))
-                        .map(formatUser)
-                        .filter(user => validateUser(user).isValid);
-
-                    const invalidCount = data.results.length - loadedTeachers.length;
-                    if (invalidCount > 0) {
-                        console.warn(`Skipped ${invalidCount} invalid API users.`);
-                    }
-
                     setTeachers(current => [...loadedTeachers, ...current]);
                 }
             } catch (error) {
@@ -229,8 +212,36 @@ export default function App() {
 
         loadUsers();
 
-        return () => controller.abort();
+        return () => {
+            controller.abort();
+            loadMoreRequest.current?.abort();
+        };
     }, []);
+
+    const loadMoreTeachers = async () => {
+        if (loadMoreRequest.current) return;
+
+        const controller = new AbortController();
+        loadMoreRequest.current = controller;
+        setLoadingMore(true);
+        setLoadMoreError('');
+
+        try {
+            const newTeachers = await fetchTeachers(10, controller.signal);
+            if (!controller.signal.aborted) {
+                setTeachers(current => [...current, ...newTeachers]);
+            }
+        } catch (error) {
+            if (!controller.signal.aborted) {
+                setLoadMoreError('Не вдалося завантажити користувачів. Спробуйте ще раз.');
+            }
+        } finally {
+            if (loadMoreRequest.current === controller) {
+                loadMoreRequest.current = null;
+                setLoadingMore(false);
+            }
+        }
+    };
 
     const addTeacher = (teacher) => {
         setTeachers(current => [...current, teacher]);
@@ -251,7 +262,14 @@ export default function App() {
             ) : error ? (
                 <main><p role="alert">{error}</p></main>
             ) : (
-                <Main teachers={teachers} onSelectTeacher={setSelectedTeacherId} search={search} />
+                <Main
+                    teachers={teachers}
+                    onSelectTeacher={setSelectedTeacherId}
+                    search={search}
+                    onLoadMore={loadMoreTeachers}
+                    loadingMore={loadingMore}
+                    loadMoreError={loadMoreError}
+                />
             )}
             <Footer onAddTeacher={() => setAddPopupOpen(true)} />
             {selectedTeacher && (
