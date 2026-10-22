@@ -1,0 +1,22 @@
+{
+  "teachers": [
+    {
+      "gender": "male",
+      "full_name": "eret",
+      "city": "etet",
+      "country": "Ukraine",
+      "email": "sds@sfd.sd",
+      "b_date": "2026-10-11",
+      "age": 0,
+      "phone": "12",
+      "picture_large": null,
+      "picture_thumbnail": null,
+      "id": "n3gu_B8jA0A",
+      "favorite": false,
+      "course": "Mathematics",
+      "bg_color": "#ffffff",
+      "note": ""
+    }
+  ],
+  "$schema": "./node_modules/json-server/schema.json"
+}

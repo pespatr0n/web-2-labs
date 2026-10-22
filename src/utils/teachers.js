@@ -234,6 +234,40 @@ export async function fetchTeachers(count, signal) {
     return users;
 }
 
+export async function fetchSavedTeachers(signal) {
+    const response = await fetch('http://127.0.0.1:3000/teachers', { signal });
+
+    if (!response.ok) {
+        throw new Error(`Unable to load saved teachers: HTTP ${response.status}`);
+    }
+
+    const teachers = await response.json();
+    if (!Array.isArray(teachers)) {
+        throw new Error('Invalid saved teachers response: expected an array.');
+    }
+
+    return teachers.filter(teacher => validateUser(teacher).isValid);
+}
+
+export async function createTeacher(teacher) {
+    const validation = validateUser(teacher);
+    if (!validation.isValid) {
+        throw new Error(validation.error);
+    }
+
+    const response = await fetch('http://127.0.0.1:3000/teachers', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(teacher)
+    });
+
+    if (!response.ok) {
+        throw new Error(`Unable to save teacher: HTTP ${response.status}`);
+    }
+
+    return response.json();
+}
+
 export const filterUsers = (usersArray, searchParams) => {
     return usersArray.filter(user => {
         for (let key in searchParams) {

@@ -1,5 +1,5 @@
 import { useRef, useState, useEffect } from 'react';
-import { fetchTeachers } from './utils/teachers.js';
+import { fetchTeachers, fetchSavedTeachers, createTeacher } from './utils/teachers.js';
 import TeacherList from './components/TeacherList.jsx';
 import TeacherInfoPopup from './components/TeacherInfoPopup.jsx';
 import Statistics from './components/Statistics.jsx';
@@ -41,7 +41,7 @@ function Header({ onSearch, onAddTeacher }) {
     );
 }
 
-function Main({ teachers, onSelectTeacher, search, onLoadMore, loadingMore, loadMoreError }) {
+function Main({ teachers, onSelectTeacher, search, onLoadMore, loadingMore, loadMoreError, loadWarning }) {
     const [country, setCountry] = useState('');
     const [ageRange, setAgeRange] = useState('');
     const [gender, setGender] = useState('');
@@ -80,6 +80,7 @@ function Main({ teachers, onSelectTeacher, search, onLoadMore, loadingMore, load
 
     return (
     <main>
+        {loadWarning && <p role="alert">{loadWarning}</p>}
         <div className="section-separator"></div>
 
         <section className="top-teachers">
@@ -183,6 +184,7 @@ export default function App() {
     const [teachers, setTeachers] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
+    const [loadWarning, setLoadWarning] = useState('');
     const [loadingMore, setLoadingMore] = useState(false);
     const [loadMoreError, setLoadMoreError] = useState('');
     const loadMoreRequest = useRef(null);
@@ -197,10 +199,27 @@ export default function App() {
 
         async function loadUsers() {
             try {
-                const loadedTeachers = await fetchTeachers(50, controller.signal);
+                const results = await Promise.allSettled([
+                    fetchTeachers(50, controller.signal),
+                    fetchSavedTeachers(controller.signal)
+                ]);
 
                 if (!controller.signal.aborted) {
-                    setTeachers(current => [...loadedTeachers, ...current]);
+                    if (results.every(result => result.status === 'rejected')) {
+                        throw new Error('Both teacher sources failed.');
+                    }
+
+                    const loadedTeachers = results.flatMap(result =>
+                        result.status === 'fulfilled' ? result.value : []
+                    );
+                    setTeachers(current => [
+                        ...new Map([...loadedTeachers, ...current].map(teacher => [teacher.id, teacher])).values()
+                    ]);
+                    setError('');
+                    setLoadWarning([
+                        results[0].status === 'rejected' ? 'Unable to load RandomUser teachers. Please refresh to try again.' : '',
+                        results[1].status === 'rejected' ? 'Unable to load saved teachers. Please refresh to try again.' : ''
+                    ].filter(Boolean).join(' '));
                 }
             } catch (error) {
                 if (!controller.signal.aborted) {
@@ -246,8 +265,9 @@ export default function App() {
         }
     };
 
-    const addTeacher = (teacher) => {
-        setTeachers(current => [...current, teacher]);
+    const addTeacher = async (teacher) => {
+        const savedTeacher = await createTeacher(teacher);
+        setTeachers(current => [...current, savedTeacher]);
         setAddPopupOpen(false);
     };
 
@@ -272,6 +292,7 @@ export default function App() {
                     onLoadMore={loadMoreTeachers}
                     loadingMore={loadingMore}
                     loadMoreError={loadMoreError}
+                    loadWarning={loadWarning}
                 />
             )}
             <Footer onAddTeacher={() => setAddPopupOpen(true)} />
