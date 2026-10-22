@@ -1,5 +1,5 @@
 import { useRef, useState, useEffect } from 'react';
-import { formatUser } from './utils/teachers.js';
+import { formatUser, validateUser } from './utils/teachers.js';
 import TeacherList from './components/TeacherList.jsx';
 import TeacherInfoPopup from './components/TeacherInfoPopup.jsx';
 import Statistics from './components/Statistics.jsx';
@@ -195,12 +195,25 @@ export default function App() {
 
                 const data = await response.json();
 
-                if (data.error) {
+                if (data?.error) {
                     throw new Error(data.error);
                 }
 
+                if (!Array.isArray(data?.results)) {
+                    throw new Error('Invalid API response: results must be an array.');
+                }
+
                 if (!controller.signal.aborted) {
-                    const loadedTeachers = data.results.map(formatUser);
+                    const loadedTeachers = data.results
+                        .filter(user => user && typeof user === 'object' && !Array.isArray(user))
+                        .map(formatUser)
+                        .filter(validateUser);
+
+                    const invalidCount = data.results.length - loadedTeachers.length;
+                    if (invalidCount > 0) {
+                        console.warn(`Skipped ${invalidCount} invalid API users.`);
+                    }
+
                     setTeachers(current => [...loadedTeachers, ...current]);
                 }
             } catch (error) {

@@ -154,14 +154,19 @@ export const mergeAndFormatUsers = (mockUsers, extraUsers) => {
 };
 
 export const validateUser = (user) => {
-    const isCapitalizedString = (value) => {
-        if (value === "") return true;
-        return typeof value === 'string' && value.length > 0 && value[0] === value[0].toUpperCase();
-    };
+    if (!user || typeof user !== 'object' || Array.isArray(user)) {
+        return false;
+    }
 
-    const stringFields = ['full_name', 'note', 'state', 'city', 'country'];
-    for (let field of stringFields) {
-        if (!isCapitalizedString(user[field])) {
+    const requiredStrings = ['full_name', 'city', 'country'];
+    for (const field of requiredStrings) {
+        if (typeof user[field] !== 'string' || user[field].trim() === '') {
+            return false;
+        }
+    }
+
+    for (const field of ['note', 'state']) {
+        if (user[field] != null && typeof user[field] !== 'string') {
             return false;
         }
     }
@@ -170,24 +175,21 @@ export const validateUser = (user) => {
         return false;
     }
 
-    if (typeof user.age !== 'number' || isNaN(user.age)) {
+    if (!Number.isInteger(user.age) || user.age < 0) {
         return false;
     }
 
-    if (typeof user.email !== 'string' || !user.email.includes('@')) {
+    if (typeof user.email !== 'string' || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(user.email)) {
         return false;
     }
 
 
-    if (typeof user.phone !== 'string' || user.phone.trim() === '') {
+    if (
+        typeof user.phone !== 'string' ||
+        !/^[0-9\s+().-]+$/.test(user.phone) ||
+        !/[0-9]/.test(user.phone)
+    ) {
         return false;
-    }
-
-    const allowedChars = "0123456789 +-()";
-    for (let i = 0; i < user.phone.length; i++) {
-        if (!allowedChars.includes(user.phone[i])) {
-            return false;
-        }
     }
 
     return true;
