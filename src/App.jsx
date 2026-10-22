@@ -1,6 +1,5 @@
-import { useRef, useState } from 'react';
-import { randomUserMock, additionalUsers } from '../FE4U-Lab2-mock.js';
-import { mergeAndFormatUsers } from './utils/teachers.js';
+import { useRef, useState, useEffect } from 'react';
+import { formatUser } from './utils/teachers.js';
 import TeacherList from './components/TeacherList.jsx';
 import TeacherInfoPopup from './components/TeacherInfoPopup.jsx';
 import Statistics from './components/Statistics.jsx';
@@ -172,12 +171,53 @@ function Footer({ onAddTeacher }) {
 }
 
 export default function App() {
-    const [teachers, setTeachers] = useState(() => mergeAndFormatUsers(randomUserMock, additionalUsers));
+    const [teachers, setTeachers] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState('');
     const [search, setSearch] = useState('');
     const [addPopupOpen, setAddPopupOpen] = useState(false);
     const countries = [...new Set(['Ukraine', ...teachers.map(teacher => teacher.country).filter(Boolean)])].sort();
     const [selectedTeacherId, setSelectedTeacherId] = useState(null);
     const selectedTeacher = teachers.find(teacher => teacher.id === selectedTeacherId);
+
+    useEffect(() => {
+        const controller = new AbortController();
+
+        async function loadUsers() {
+            try {
+                const response = await fetch('https://randomuser.me/api/?results=50', {
+                    signal: controller.signal
+                });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP error: ${response.status}`);
+                }
+
+                const data = await response.json();
+
+                if (data.error) {
+                    throw new Error(data.error);
+                }
+
+                if (!controller.signal.aborted) {
+                    const loadedTeachers = data.results.map(formatUser);
+                    setTeachers(current => [...loadedTeachers, ...current]);
+                }
+            } catch (error) {
+                if (!controller.signal.aborted) {
+                    setError('Unable to load teachers. Please refresh the page to try again.');
+                }
+            } finally {
+                if (!controller.signal.aborted) {
+                    setLoading(false);
+                }
+            }
+        }
+
+        loadUsers();
+
+        return () => controller.abort();
+    }, []);
 
     const addTeacher = (teacher) => {
         setTeachers(current => [...current, teacher]);
@@ -193,7 +233,13 @@ export default function App() {
     return (
         <>
             <Header onSearch={setSearch} onAddTeacher={() => setAddPopupOpen(true)} />
-            <Main teachers={teachers} onSelectTeacher={setSelectedTeacherId} search={search} />
+            {loading ? (
+                <main><p role="status">Loading teachers...</p></main>
+            ) : error ? (
+                <main><p role="alert">{error}</p></main>
+            ) : (
+                <Main teachers={teachers} onSelectTeacher={setSelectedTeacherId} search={search} />
+            )}
             <Footer onAddTeacher={() => setAddPopupOpen(true)} />
             {selectedTeacher && (
                 <TeacherInfoPopup
