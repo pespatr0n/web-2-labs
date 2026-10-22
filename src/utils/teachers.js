@@ -154,33 +154,43 @@ export const mergeAndFormatUsers = (mockUsers, extraUsers) => {
 };
 
 export const validateUser = (user) => {
+    const invalid = (error) => ({ isValid: false, error });
+
     if (!user || typeof user !== 'object' || Array.isArray(user)) {
-        return false;
+        return invalid('User data must be an object.');
     }
 
-    const requiredStrings = ['full_name', 'city', 'country'];
-    for (const field of requiredStrings) {
+    const requiredStrings = [
+        ['full_name', 'name'],
+        ['city', 'city'],
+        ['country', 'country']
+    ];
+    for (const [field, label] of requiredStrings) {
         if (typeof user[field] !== 'string' || user[field].trim() === '') {
-            return false;
+            return invalid(`Enter a ${label}.`);
         }
     }
 
     for (const field of ['note', 'state']) {
         if (user[field] != null && typeof user[field] !== 'string') {
-            return false;
+            return invalid(`${field === 'note' ? 'Notes' : 'State'} must be text.`);
         }
     }
 
+    if (typeof user.b_date !== 'string' || calculateAge(user.b_date) === null) {
+        return invalid('Enter a valid birth date that is not in the future.');
+    }
+
     if (!['male', 'female'].includes(user.gender)) {
-        return false;
+        return invalid('Select male or female.');
     }
 
     if (!Number.isInteger(user.age) || user.age < 0) {
-        return false;
+        return invalid('Age must be a non-negative whole number.');
     }
 
     if (typeof user.email !== 'string' || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(user.email)) {
-        return false;
+        return invalid('Enter a valid email address.');
     }
 
 
@@ -189,10 +199,10 @@ export const validateUser = (user) => {
         !/^[0-9\s+().-]+$/.test(user.phone) ||
         !/[0-9]/.test(user.phone)
     ) {
-        return false;
+        return invalid('Enter a phone number with at least one digit using digits, spaces, +, -, dots, or parentheses.');
     }
 
-    return true;
+    return { isValid: true, error: null };
 };
 
 export const filterUsers = (usersArray, searchParams) => {

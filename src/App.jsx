@@ -207,7 +207,7 @@ export default function App() {
                     const loadedTeachers = data.results
                         .filter(user => user && typeof user === 'object' && !Array.isArray(user))
                         .map(formatUser)
-                        .filter(validateUser);
+                        .filter(user => validateUser(user).isValid);
 
                     const invalidCount = data.results.length - loadedTeachers.length;
                     if (invalidCount > 0) {

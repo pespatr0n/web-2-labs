@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { formatUser } from '../utils/teachers.js';
+import { formatUser, validateUser } from '../utils/teachers.js';
 
 export default function AddTeacherPopup({ onClose, onAddTeacher, countries }) {
     const [error, setError] = useState('');
@@ -20,20 +20,13 @@ export default function AddTeacherPopup({ onClose, onAddTeacher, countries }) {
             note: data.get('note').trim()
         });
 
-        if (!teacher.full_name || !teacher.city) {
-            setError('Enter a name and city.');
-            return;
-        }
-        if (teacher.age === null) {
-            setError('Enter a valid birth date that is not in the future.');
-            return;
-        }
-        const allowedPhoneCharacters = '0123456789 +-()';
-        if (!teacher.phone || !teacher.phone.split('').every(character => allowedPhoneCharacters.includes(character))) {
-            setError('Enter a phone number using digits, spaces, +, -, or parentheses.');
+        const validation = validateUser(teacher);
+        if (!validation.isValid) {
+            setError(validation.error);
             return;
         }
 
+        setError('');
         onAddTeacher(teacher);
     };
 
@@ -45,7 +38,7 @@ export default function AddTeacherPopup({ onClose, onAddTeacher, countries }) {
                 <button className="close-btn" aria-label="Close" onClick={onClose}>&times;</button>
             </div>
             
-            <form className="add-teacher-form" onSubmit={submitTeacher}>
+            <form className="add-teacher-form" onSubmit={submitTeacher} noValidate>
                 <label>
                     Name
                     <input type="text" name="full_name" placeholder="Enter name" required />
@@ -109,7 +102,7 @@ export default function AddTeacherPopup({ onClose, onAddTeacher, countries }) {
                     <textarea name="note" rows="4"></textarea>
                 </label>
                 
-                {error && <p>{error}</p>}
+                {error && <p role="alert">{error}</p>}
                 <button type="submit" className="submit-btn full-width-btn">Add</button>
             </form>
         </section>
