@@ -323,6 +323,11 @@ header {
         a:hover {
             opacity: 0.7;
         }
+
+        a[aria-current='page'] {
+            color: $text;
+            text-decoration: underline;
+        }
     }
 }
 

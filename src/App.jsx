@@ -130,7 +130,10 @@ function Main({ teachers, onSelectTeacher, search, onLoadMore, loadingMore, load
 
         <div className="section-separator"></div>
 
-        <Statistics teachers={filteredTeachers} />
+        <Statistics
+            teachers={filteredTeachers}
+            filterKey={JSON.stringify([search, country, ageRange, gender, onlyFavorites, onlyWithPhoto])}
+        />
 
         <div className="section-separator"></div>
 

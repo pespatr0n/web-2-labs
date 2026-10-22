@@ -272,6 +272,10 @@ header .add-btn:hover {
 .statistics .pagination a:hover {
   opacity: 0.7;
 }
+.statistics .pagination a[aria-current=page] {
+  color: #333;
+  text-decoration: underline;
+}
 
 .favorites {
   padding-bottom: 40px;
