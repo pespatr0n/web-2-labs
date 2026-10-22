@@ -147,6 +147,28 @@ header .add-btn:hover {
   text-align: center;
 }
 
+.load-more {
+  margin-top: 20px;
+  text-align: center;
+}
+.load-more button {
+  border: 2px solid #f05c4d;
+  background: none;
+  color: #f05c4d;
+  padding: 10px 20px;
+  border-radius: 4px;
+  font-weight: bold;
+  cursor: pointer;
+}
+.load-more button:disabled {
+  opacity: 0.5;
+  cursor: wait;
+}
+.load-more [role=alert] {
+  margin-top: 10px;
+  color: #f05c4d;
+}
+
 .teacher-card {
   position: relative;
   cursor: pointer;
@@ -249,6 +271,10 @@ header .add-btn:hover {
 }
 .statistics .pagination a:hover {
   opacity: 0.7;
+}
+.statistics .pagination a[aria-current=page] {
+  color: #333;
+  text-decoration: underline;
 }
 
 .favorites {

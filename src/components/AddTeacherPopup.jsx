@@ -1,11 +1,13 @@
 import { useState } from 'react';
-import { formatUser } from '../utils/teachers.js';
+import { formatUser, validateUser } from '../utils/teachers.js';
 
 export default function AddTeacherPopup({ onClose, onAddTeacher, countries }) {
     const [error, setError] = useState('');
+    const [submitting, setSubmitting] = useState(false);
 
-    const submitTeacher = (event) => {
+    const submitTeacher = async (event) => {
         event.preventDefault();
+        if (submitting) return;
         const data = new FormData(event.currentTarget);
         const teacher = formatUser({
             full_name: data.get('full_name').trim(),
@@ -20,21 +22,21 @@ export default function AddTeacherPopup({ onClose, onAddTeacher, countries }) {
             note: data.get('note').trim()
         });
 
-        if (!teacher.full_name || !teacher.city) {
-            setError('Enter a name and city.');
-            return;
-        }
-        if (teacher.age === null) {
-            setError('Enter a valid birth date that is not in the future.');
-            return;
-        }
-        const allowedPhoneCharacters = '0123456789 +-()';
-        if (!teacher.phone || !teacher.phone.split('').every(character => allowedPhoneCharacters.includes(character))) {
-            setError('Enter a phone number using digits, spaces, +, -, or parentheses.');
+        const validation = validateUser(teacher);
+        if (!validation.isValid) {
+            setError(validation.error);
             return;
         }
 
-        onAddTeacher(teacher);
+        setError('');
+        setSubmitting(true);
+        try {
+            await onAddTeacher(teacher);
+        } catch (error) {
+            setError('Unable to save teacher. Please try again.');
+        } finally {
+            setSubmitting(false);
+        }
     };
 
     return (
@@ -42,10 +44,10 @@ export default function AddTeacherPopup({ onClose, onAddTeacher, countries }) {
         <section className="popup-content add-popup-content" style={{ maxHeight: '90vh', overflowY: 'auto' }}>
             <div className="popup-header dark-header">
                 <h2>Add Teacher</h2>
-                <button className="close-btn" aria-label="Close" onClick={onClose}>&times;</button>
+                <button className="close-btn" aria-label="Close" onClick={onClose} disabled={submitting}>&times;</button>
             </div>
             
-            <form className="add-teacher-form" onSubmit={submitTeacher}>
+            <form className="add-teacher-form" onSubmit={submitTeacher} noValidate aria-busy={submitting}>
                 <label>
                     Name
                     <input type="text" name="full_name" placeholder="Enter name" required />
@@ -109,8 +111,10 @@ export default function AddTeacherPopup({ onClose, onAddTeacher, countries }) {
                     <textarea name="note" rows="4"></textarea>
                 </label>
                 
-                {error && <p>{error}</p>}
-                <button type="submit" className="submit-btn full-width-btn">Add</button>
+                {error && <p role="alert">{error}</p>}
+                <button type="submit" className="submit-btn full-width-btn" disabled={submitting}>
+                    {submitting ? 'Saving...' : 'Add'}
+                </button>
             </form>
         </section>
     </div>

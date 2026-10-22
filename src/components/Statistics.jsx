@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { sortUsers } from '../utils/teachers.js';
 
 const columns = [
@@ -10,12 +10,27 @@ const columns = [
     { label: 'Nationality', field: 'country' }
 ];
 
-export default function Statistics({ teachers }) {
+const PAGE_SIZE = 10;
+const VISIBLE_PAGE_COUNT = 5;
+
+export default function Statistics({ teachers, filterKey }) {
     const [sortBy, setSortBy] = useState('');
     const [sortOrder, setSortOrder] = useState('asc');
+    const [page, setPage] = useState(1);
+    const pageCount = Math.ceil(teachers.length / PAGE_SIZE);
+    const currentPage = Math.min(page, Math.max(1, pageCount));
+
+    useEffect(() => {
+        setPage(1);
+    }, [filterKey]);
+
+    useEffect(() => {
+        setPage(current => Math.min(current, Math.max(1, pageCount)));
+    }, [pageCount]);
 
     const changeSort = (field) => {
         if (!field) return;
+        setPage(1);
 
         if (sortBy === field) {
             setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc');
@@ -26,6 +41,21 @@ export default function Statistics({ teachers }) {
     };
 
     const sortedTeachers = sortBy ? sortUsers(teachers, sortBy, sortOrder) : teachers;
+    const startIndex = (currentPage - 1) * PAGE_SIZE;
+    const pageTeachers = sortedTeachers.slice(startIndex, startIndex + PAGE_SIZE);
+    const firstVisiblePage = Math.min(
+        Math.max(1, currentPage - Math.floor(VISIBLE_PAGE_COUNT / 2)),
+        Math.max(1, pageCount - VISIBLE_PAGE_COUNT + 1)
+    );
+    const visiblePages = Array.from(
+        { length: Math.min(VISIBLE_PAGE_COUNT, pageCount) },
+        (_, index) => firstVisiblePage + index
+    );
+
+    const changePage = (event, nextPage) => {
+        event.preventDefault();
+        setPage(nextPage);
+    };
 
     return (
         <section className="statistics">
@@ -47,7 +77,7 @@ export default function Statistics({ teachers }) {
                     </tr>
                 </thead>
                 <tbody>
-                    {sortedTeachers.map(teacher => (
+                    {pageTeachers.map(teacher => (
                         <tr key={teacher.id}>
                             <td>{teacher.full_name}</td>
                             <td>{teacher.course}</td>
@@ -59,13 +89,26 @@ export default function Statistics({ teachers }) {
                     ))}
                 </tbody>
             </table>
-            <div className="pagination">
-                <a href="#">1</a>{' '}
-                <a href="#">2</a>{' '}
-                <a href="#">3</a>{' '}
-                <span>...</span>{' '}
-                <a href="#">Last</a>
-            </div>
+            {pageCount > 0 && (
+                <div className="pagination" role="navigation" aria-label="Statistics pages">
+                    {firstVisiblePage > 1 && (
+                        <>
+                            <a href="#" onClick={event => changePage(event, 1)}>1</a>
+                            {firstVisiblePage > 2 && <span>...</span>}
+                        </>
+                    )}
+                    {visiblePages.map(pageNumber => (
+                        <a
+                            key={pageNumber}
+                            href="#"
+                            aria-current={pageNumber === currentPage ? 'page' : undefined}
+                            onClick={event => changePage(event, pageNumber)}
+                        >{pageNumber}</a>
+                    ))}
+                    {visiblePages.at(-1) < pageCount && <span>...</span>}
+                    <a href="#" onClick={event => changePage(event, pageCount)}>Last</a>
+                </div>
+            )}
         </section>
     );
 }

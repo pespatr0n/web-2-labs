@@ -154,44 +154,119 @@ export const mergeAndFormatUsers = (mockUsers, extraUsers) => {
 };
 
 export const validateUser = (user) => {
-    const isCapitalizedString = (value) => {
-        if (value === "") return true;
-        return typeof value === 'string' && value.length > 0 && value[0] === value[0].toUpperCase();
-    };
+    const invalid = (error) => ({ isValid: false, error });
 
-    const stringFields = ['full_name', 'note', 'state', 'city', 'country'];
-    for (let field of stringFields) {
-        if (!isCapitalizedString(user[field])) {
-            return false;
+    if (!user || typeof user !== 'object' || Array.isArray(user)) {
+        return invalid('User data must be an object.');
+    }
+
+    const requiredStrings = [
+        ['full_name', 'name'],
+        ['city', 'city'],
+        ['country', 'country']
+    ];
+    for (const [field, label] of requiredStrings) {
+        if (typeof user[field] !== 'string' || user[field].trim() === '') {
+            return invalid(`Enter a ${label}.`);
         }
+    }
+
+    for (const field of ['note', 'state']) {
+        if (user[field] != null && typeof user[field] !== 'string') {
+            return invalid(`${field === 'note' ? 'Notes' : 'State'} must be text.`);
+        }
+    }
+
+    if (typeof user.b_date !== 'string' || calculateAge(user.b_date) === null) {
+        return invalid('Enter a valid birth date that is not in the future.');
     }
 
     if (!['male', 'female'].includes(user.gender)) {
-        return false;
+        return invalid('Select male or female.');
     }
 
-    if (typeof user.age !== 'number' || isNaN(user.age)) {
-        return false;
+    if (!Number.isInteger(user.age) || user.age < 0) {
+        return invalid('Age must be a non-negative whole number.');
     }
 
-    if (typeof user.email !== 'string' || !user.email.includes('@')) {
-        return false;
+    if (typeof user.email !== 'string' || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(user.email)) {
+        return invalid('Enter a valid email address.');
     }
 
 
-    if (typeof user.phone !== 'string' || user.phone.trim() === '') {
-        return false;
+    if (
+        typeof user.phone !== 'string' ||
+        !/^[0-9\s+().-]+$/.test(user.phone) ||
+        !/[0-9]/.test(user.phone)
+    ) {
+        return invalid('Enter a phone number with at least one digit using digits, spaces, +, -, dots, or parentheses.');
     }
 
-    const allowedChars = "0123456789 +-()";
-    for (let i = 0; i < user.phone.length; i++) {
-        if (!allowedChars.includes(user.phone[i])) {
-            return false;
-        }
-    }
-
-    return true;
+    return { isValid: true, error: null };
 };
+
+export async function fetchTeachers(count, signal) {
+    const response = await fetch(`https://randomuser.me/api/?results=${count}`, { signal });
+
+    if (!response.ok) {
+        throw new Error(`HTTP error: ${response.status}`);
+    }
+
+    const data = await response.json();
+
+    if (data?.error) {
+        throw new Error(data.error);
+    }
+    if (!Array.isArray(data?.results)) {
+        throw new Error('Invalid API response: results must be an array.');
+    }
+
+    const users = data.results
+        .filter(user => user && typeof user === 'object' && !Array.isArray(user))
+        .map(formatUser)
+        .filter(user => validateUser(user).isValid);
+
+    const invalidCount = data.results.length - users.length;
+    if (invalidCount > 0) {
+        console.warn(`Skipped ${invalidCount} invalid API users.`);
+    }
+
+    return users;
+}
+
+export async function fetchSavedTeachers(signal) {
+    const response = await fetch('http://127.0.0.1:3000/teachers', { signal });
+
+    if (!response.ok) {
+        throw new Error(`Unable to load saved teachers: HTTP ${response.status}`);
+    }
+
+    const teachers = await response.json();
+    if (!Array.isArray(teachers)) {
+        throw new Error('Invalid saved teachers response: expected an array.');
+    }
+
+    return teachers.filter(teacher => validateUser(teacher).isValid);
+}
+
+export async function createTeacher(teacher) {
+    const validation = validateUser(teacher);
+    if (!validation.isValid) {
+        throw new Error(validation.error);
+    }
+
+    const response = await fetch('http://127.0.0.1:3000/teachers', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(teacher)
+    });
+
+    if (!response.ok) {
+        throw new Error(`Unable to save teacher: HTTP ${response.status}`);
+    }
+
+    return response.json();
+}
 
 export const filterUsers = (usersArray, searchParams) => {
     return usersArray.filter(user => {
