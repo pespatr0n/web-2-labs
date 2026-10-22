@@ -124,7 +124,7 @@ function Main({ teachers, onSelectTeacher, search }) {
 
         <div className="section-separator"></div>
 
-        <Statistics teachers={teachers} />
+        <Statistics teachers={filteredTeachers} />
 
         <div className="section-separator"></div>
 
