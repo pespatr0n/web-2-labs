@@ -1,13 +1,12 @@
+import _ from 'lodash';
+
 const COURSES = [
     "Mathematics", "Physics", "English", "Computer Science",
     "Dancing", "Chess", "Biology", "Chemistry",
     "Law", "Art", "Medicine", "Statistics"
 ];
 
-export const getRandomCourse = () => {
-    const randomIndex = Math.floor(Math.random() * COURSES.length);
-    return COURSES[randomIndex];
-};
+export const getRandomCourse = () => _.sample(COURSES);
 
 export const calculateAge = (birthDate) => {
     if (!birthDate) return null;
@@ -46,17 +45,17 @@ const getUserId = (user) => {
 
 export const formatUser = (user) => {
     const fullName = user.full_name || `${user.name?.first || ''} ${user.name?.last || ''}`.trim();
-    const title = user.name?.title || user.title;
-    const city = user.location?.city || user.city;
-    const state = user.location?.state || user.state;
-    const country = user.location?.country || user.country;
-    const postcode = user.location?.postcode || user.postcode;
-    const coordinates = user.location?.coordinates || user.coordinates;
-    const timezone = user.location?.timezone || user.timezone;
-    const b_date = user.dob?.date || user.b_day;
-    const age = user.dob?.age ?? user.age ?? calculateAge(b_date);
-    const picture_large = user.picture?.large || user.picture_large || null;
-    const picture_thumbnail = user.picture?.thumbnail || user.picture_thumbnail || null;
+    const title = _.get(user, 'name.title') || user.title;
+    const city = _.get(user, 'location.city') || user.city;
+    const state = _.get(user, 'location.state') || user.state;
+    const country = _.get(user, 'location.country') || user.country;
+    const postcode = _.get(user, 'location.postcode') || user.postcode;
+    const coordinates = _.get(user, 'location.coordinates') || user.coordinates;
+    const timezone = _.get(user, 'location.timezone') || user.timezone;
+    const b_date = _.get(user, 'dob.date') || user.b_day;
+    const age = _.get(user, 'dob.age') ?? user.age ?? calculateAge(b_date);
+    const picture_large = _.get(user, 'picture.large') || user.picture_large || null;
+    const picture_thumbnail = _.get(user, 'picture.thumbnail') || user.picture_thumbnail || null;
     const id = getUserId(user) || crypto.randomUUID();
 
     return {
@@ -106,40 +105,39 @@ const getUserFields = (user) => {
 };
 
 export const mergeAndFormatUsers = (mockUsers, extraUsers) => {
-    const mergedUsers = [];
     const getEmail = (user) => typeof user.email === 'string' ? user.email.trim().toLowerCase() : '';
 
-    for (const user of [...mockUsers, ...extraUsers]) {
+    const mergedUsers = _.reduce([...mockUsers, ...extraUsers], (users, user) => {
         const fields = getUserFields(user);
         const email = getEmail(fields);
         const id = getUserId(fields);
-        let index = email ? mergedUsers.findIndex(existing => getEmail(existing) === email) : -1;
+        let index = email ? _.findIndex(users, existing => getEmail(existing) === email) : -1;
 
         if (index === -1 && id) {
-            index = mergedUsers.findIndex(existing =>
+            index = _.findIndex(users, existing =>
                 (!email || !getEmail(existing)) && getUserId(existing) === id
             );
         }
 
-        const updates = Object.fromEntries(
-            Object.entries(fields).filter(([, value]) => value !== undefined && value !== null)
-        );
+        const updates = _.omitBy(fields, _.isNil);
 
         if (index === -1) {
-            mergedUsers.push(updates);
+            users.push(updates);
         } else {
-            mergedUsers[index] = {
-                ...mergedUsers[index],
+            users[index] = {
+                ...users[index],
                 ...updates,
-                id: getUserId(mergedUsers[index]) || updates.id
+                id: getUserId(users[index]) || updates.id
             };
         }
-    }
 
-    const reservedIds = new Set(mergedUsers.map(getUserId).filter(Boolean));
+        return users;
+    }, []);
+
+    const reservedIds = new Set(_.compact(_.map(mergedUsers, getUserId)));
     const usedIds = new Set();
 
-    return mergedUsers.map(user => {
+    return _.map(mergedUsers, user => {
         let id = getUserId(user);
 
         if (!id || usedIds.has(id)) {
@@ -156,7 +154,7 @@ export const mergeAndFormatUsers = (mockUsers, extraUsers) => {
 export const validateUser = (user) => {
     const invalid = (error) => ({ isValid: false, error });
 
-    if (!user || typeof user !== 'object' || Array.isArray(user)) {
+    if (!_.isObjectLike(user) || _.isArray(user)) {
         return invalid('User data must be an object.');
     }
 
@@ -165,27 +163,29 @@ export const validateUser = (user) => {
         ['city', 'city'],
         ['country', 'country']
     ];
-    for (const [field, label] of requiredStrings) {
-        if (typeof user[field] !== 'string' || user[field].trim() === '') {
-            return invalid(`Enter a ${label}.`);
-        }
+    const missingField = _.find(requiredStrings, ([field]) =>
+        typeof user[field] !== 'string' || _.trim(user[field]) === ''
+    );
+    if (missingField) {
+        return invalid(`Enter a ${missingField[1]}.`);
     }
 
-    for (const field of ['note', 'state']) {
-        if (user[field] != null && typeof user[field] !== 'string') {
-            return invalid(`${field === 'note' ? 'Notes' : 'State'} must be text.`);
-        }
+    const invalidTextField = _.find(['note', 'state'], field =>
+        !_.isNil(user[field]) && typeof user[field] !== 'string'
+    );
+    if (invalidTextField) {
+        return invalid(`${invalidTextField === 'note' ? 'Notes' : 'State'} must be text.`);
     }
 
     if (typeof user.b_date !== 'string' || calculateAge(user.b_date) === null) {
         return invalid('Enter a valid birth date that is not in the future.');
     }
 
-    if (!['male', 'female'].includes(user.gender)) {
+    if (!_.includes(['male', 'female'], user.gender)) {
         return invalid('Select male or female.');
     }
 
-    if (!Number.isInteger(user.age) || user.age < 0) {
+    if (!_.isInteger(user.age) || user.age < 0) {
         return invalid('Age must be a non-negative whole number.');
     }
 
@@ -217,14 +217,15 @@ export async function fetchTeachers(count, signal) {
     if (data?.error) {
         throw new Error(data.error);
     }
-    if (!Array.isArray(data?.results)) {
+    if (!_.isArray(data?.results)) {
         throw new Error('Invalid API response: results must be an array.');
     }
 
-    const users = data.results
-        .filter(user => user && typeof user === 'object' && !Array.isArray(user))
+    const users = _.chain(data.results)
+        .filter(user => _.isObjectLike(user) && !_.isArray(user))
         .map(formatUser)
-        .filter(user => validateUser(user).isValid);
+        .filter(user => validateUser(user).isValid)
+        .value();
 
     const invalidCount = data.results.length - users.length;
     if (invalidCount > 0) {
@@ -242,11 +243,11 @@ export async function fetchSavedTeachers(signal) {
     }
 
     const teachers = await response.json();
-    if (!Array.isArray(teachers)) {
+    if (!_.isArray(teachers)) {
         throw new Error('Invalid saved teachers response: expected an array.');
     }
 
-    return teachers.filter(teacher => validateUser(teacher).isValid);
+    return _.filter(teachers, teacher => validateUser(teacher).isValid);
 }
 
 export async function createTeacher(teacher) {
@@ -268,51 +269,28 @@ export async function createTeacher(teacher) {
     return response.json();
 }
 
-export const filterUsers = (usersArray, searchParams) => {
-    return usersArray.filter(user => {
-        for (let key in searchParams) {
-            if (user[key] !== searchParams[key]) {
-                return false;
-            }
-        }
-        return true;
-    });
-};
+export const filterUsers = (usersArray, searchParams) =>
+    _.filter(usersArray, user => _.every(searchParams, (value, key) => user[key] === value));
 
 export const sortUsers = (usersArray, sortBy, order) => {
-    return [...usersArray].sort((a, b) => {
-        let first = a[sortBy];
-        let second = b[sortBy];
+    const isMissing = value => _.isNil(value) || value === '';
 
-        const firstMissing = first === undefined || first === null || first === '';
-        const secondMissing = second === undefined || second === null || second === '';
-        if (firstMissing && secondMissing) return 0;
-        if (firstMissing) return 1;
-        if (secondMissing) return -1;
-
-        if (typeof first === 'string' && typeof second === 'string') {
-            first = first.toLowerCase();
-            second = second.toLowerCase();
+    return _.orderBy(usersArray, [
+        user => isMissing(user[sortBy]),
+        user => {
+            const value = user[sortBy];
+            if (isMissing(value)) return null;
+            return typeof value === 'string' ? _.toLower(value) : value;
         }
-
-        if (first < second) {
-            if (order === 'desc') return 1;
-            return -1;
-        }
-        if (first > second) {
-            if (order === 'desc') return -1;
-            return 1;
-        }
-        return 0;
-    });
+    ], ['asc', order === 'desc' ? 'desc' : 'asc']);
 };
 
 export const findUser = (usersArray, searchField, searchValue) => {
-    return usersArray.find(user => {
+    return _.find(usersArray, user => {
         const value = user[searchField];
 
         if (typeof value === 'string' && typeof searchValue === 'string') {
-            return value.toLowerCase().includes(searchValue.toLowerCase());
+            return _.includes(_.toLower(value), _.toLower(searchValue));
         }
 
         return value === searchValue;
@@ -322,12 +300,5 @@ export const findUser = (usersArray, searchField, searchValue) => {
 export const getPercentage = (usersArray, condition) => {
     if (usersArray.length === 0) return 0;
 
-    let count = 0;
-    for (let user of usersArray) {
-        if (condition(user)) {
-            count++;
-        }
-    }
-
-    return (count / usersArray.length) * 100;
+    return (_.filter(usersArray, condition).length / usersArray.length) * 100;
 };

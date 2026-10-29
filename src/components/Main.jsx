@@ -1,4 +1,5 @@
 import { useRef, useState } from 'react';
+import _ from 'lodash';
 import TeacherList from './TeacherList.jsx';
 import Statistics from './Statistics.jsx';
 
@@ -18,13 +19,12 @@ export default function Main({ teachers, onSelectTeacher, search, onLoadMore, lo
         list.scrollBy({ left: direction * (card.offsetWidth + 30), behavior: 'smooth' });
     };
 
-    const countries = [...new Set(teachers.map(teacher => teacher.country).filter(Boolean))].sort();
+    const countries = _.sortBy(_.uniq(_.compact(_.map(teachers, 'country'))));
     const [minAge, maxAge = Infinity] = ageRange.split('-').map(Number);
-    const filteredTeachers = teachers.filter(teacher => {
+    const filteredTeachers = _.filter(teachers, teacher => {
         if (
             search &&
-            !teacher.full_name.toLowerCase().includes(search) &&
-            !teacher.note.toLowerCase().includes(search) &&
+            !_.some([teacher.full_name, teacher.note], value => _.includes(_.toLower(value), search)) &&
             teacher.age !== Number(search)
         ) {
             return false;
@@ -92,10 +92,7 @@ export default function Main({ teachers, onSelectTeacher, search, onLoadMore, lo
 
         <div className="section-separator"></div>
 
-        <Statistics
-            teachers={filteredTeachers}
-            filterKey={JSON.stringify([search, country, ageRange, gender, onlyFavorites, onlyWithPhoto])}
-        />
+        <Statistics teachers={filteredTeachers} allTeachers={teachers} />
 
         <div className="section-separator"></div>
 
@@ -106,7 +103,7 @@ export default function Main({ teachers, onSelectTeacher, search, onLoadMore, lo
                 <button className="slider-arrow left-arrow" onClick={() => scrollFavorites(-1)}>&lt;</button>
 
                 <TeacherList
-                    teachers={teachers.filter(teacher => teacher.favorite)}
+                    teachers={_.filter(teachers, 'favorite')}
                     onSelectTeacher={onSelectTeacher}
                     listRef={favoritesRef}
                     favorites

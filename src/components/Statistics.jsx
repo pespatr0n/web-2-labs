@@ -1,113 +1,106 @@
-import { useEffect, useState } from 'react';
-import { sortUsers } from '../utils/teachers.js';
+import { lazy, Suspense, useEffect, useMemo, useRef, useState } from 'react';
+import { Chart, PieController, ArcElement, Legend, Tooltip } from 'chart.js';
 
-const columns = [
-    { label: 'Name', field: 'full_name' },
-    { label: 'Speciality', field: 'course' },
-    { label: 'Age', field: 'age' },
-    { label: 'Date of birth', field: 'b_date' },
-    { label: 'Gender' },
-    { label: 'Nationality', field: 'country' }
+Chart.register(PieController, ArcElement, Legend, Tooltip);
+
+const TeacherReport = lazy(() => import('./TeacherReport.jsx'));
+const VIEWS = [
+    { value: 'chart', label: 'Pie chart' },
+    { value: 'country', label: 'By country' },
+    { value: 'flat', label: 'All teachers' }
 ];
 
-const PAGE_SIZE = 10;
-const VISIBLE_PAGE_COUNT = 5;
+const COLORS = [
+    '#f05c4d', '#36a2eb', '#ffce56', '#4bc0c0',
+    '#9966ff', '#ff9f40', '#e76f99', '#5b8c5a',
+    '#5570a6', '#b38452', '#8e6c88', '#60b5a5'
+];
 
-export default function Statistics({ teachers, filterKey }) {
-    const [sortBy, setSortBy] = useState('');
-    const [sortOrder, setSortOrder] = useState('asc');
-    const [page, setPage] = useState(1);
-    const pageCount = Math.ceil(teachers.length / PAGE_SIZE);
-    const currentPage = Math.min(page, Math.max(1, pageCount));
+export default function Statistics({ teachers, allTeachers = teachers }) {
+    const [view, setView] = useState('chart');
+    const canvasRef = useRef(null);
+    const groups = useMemo(() => {
+        const counts = new Map();
 
-    useEffect(() => {
-        setPage(1);
-    }, [filterKey]);
-
-    useEffect(() => {
-        setPage(current => Math.min(current, Math.max(1, pageCount)));
-    }, [pageCount]);
-
-    const changeSort = (field) => {
-        if (!field) return;
-        setPage(1);
-
-        if (sortBy === field) {
-            setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc');
-        } else {
-            setSortBy(field);
-            setSortOrder('asc');
+        for (const teacher of teachers) {
+            const speciality = teacher.course || 'Unknown';
+            counts.set(speciality, (counts.get(speciality) || 0) + 1);
         }
-    };
 
-    const sortedTeachers = sortBy ? sortUsers(teachers, sortBy, sortOrder) : teachers;
-    const startIndex = (currentPage - 1) * PAGE_SIZE;
-    const pageTeachers = sortedTeachers.slice(startIndex, startIndex + PAGE_SIZE);
-    const firstVisiblePage = Math.min(
-        Math.max(1, currentPage - Math.floor(VISIBLE_PAGE_COUNT / 2)),
-        Math.max(1, pageCount - VISIBLE_PAGE_COUNT + 1)
-    );
-    const visiblePages = Array.from(
-        { length: Math.min(VISIBLE_PAGE_COUNT, pageCount) },
-        (_, index) => firstVisiblePage + index
-    );
+        return [...counts.entries()].sort(([first], [second]) => first.localeCompare(second));
+    }, [teachers]);
 
-    const changePage = (event, nextPage) => {
-        event.preventDefault();
-        setPage(nextPage);
-    };
+    useEffect(() => {
+        if (!canvasRef.current) return;
+
+        const chart = new Chart(canvasRef.current, {
+            type: 'pie',
+            data: {
+                labels: groups.map(([speciality]) => speciality),
+                datasets: [{
+                    label: 'Teachers',
+                    data: groups.map(([, count]) => count),
+                    backgroundColor: groups.map((_, index) => COLORS[index % COLORS.length]),
+                    hoverOffset: 8
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { position: 'bottom' },
+                    tooltip: {
+                        callbacks: {
+                            label: context => {
+                                const percentage = (context.parsed / teachers.length * 100).toFixed(1);
+                                return `${context.label}: ${context.parsed} (${percentage}%)`;
+                            }
+                        }
+                    }
+                }
+            }
+        });
+
+        return () => chart.destroy();
+    }, [groups, teachers.length, view]);
 
     return (
         <section className="statistics">
             <h2>Statistics</h2>
-            <table>
-                <thead>
-                    <tr>
-                        {columns.map(column => (
-                            <th key={column.label} onClick={() => changeSort(column.field)}>
-                                {column.label}{' '}
-                                {column.field && (
-                                    <span
-                                        className="sort-arrow"
-                                        style={{ opacity: sortBy === column.field ? 1 : undefined }}
-                                    >{sortBy === column.field && sortOrder === 'asc' ? '↑' : '↓'}</span>
-                                )}
-                            </th>
-                        ))}
-                    </tr>
-                </thead>
-                <tbody>
-                    {pageTeachers.map(teacher => (
-                        <tr key={teacher.id}>
-                            <td>{teacher.full_name}</td>
-                            <td>{teacher.course}</td>
-                            <td>{teacher.age ?? 'Unknown'}</td>
-                            <td>{teacher.b_date ? teacher.b_date.split('T')[0] : 'Unknown'}</td>
-                            <td>{teacher.gender}</td>
-                            <td>{teacher.country || 'Unknown'}</td>
-                        </tr>
-                    ))}
-                </tbody>
-            </table>
-            {pageCount > 0 && (
-                <div className="pagination" role="navigation" aria-label="Statistics pages">
-                    {firstVisiblePage > 1 && (
-                        <>
-                            <a href="#" onClick={event => changePage(event, 1)}>1</a>
-                            {firstVisiblePage > 2 && <span>...</span>}
-                        </>
-                    )}
-                    {visiblePages.map(pageNumber => (
-                        <a
-                            key={pageNumber}
-                            href="#"
-                            aria-current={pageNumber === currentPage ? 'page' : undefined}
-                            onClick={event => changePage(event, pageNumber)}
-                        >{pageNumber}</a>
-                    ))}
-                    {visiblePages.at(-1) < pageCount && <span>...</span>}
-                    <a href="#" onClick={event => changePage(event, pageCount)}>Last</a>
-                </div>
+            <div className="statistics-views" role="group" aria-label="Statistics view">
+                {VIEWS.map(option => (
+                    <button
+                        key={option.value}
+                        type="button"
+                        aria-pressed={view === option.value}
+                        onClick={() => setView(option.value)}
+                    >{option.label}</button>
+                ))}
+            </div>
+            {view !== 'chart' ? (
+                <>
+                    <p className="statistics-summary">
+                        {view === 'country' ? 'Teachers by country' : 'All teachers'} ({allTeachers.length} loaded)
+                    </p>
+                    <Suspense fallback={<p className="statistics-summary" role="status">Loading report...</p>}>
+                        <TeacherReport teachers={allTeachers} mode={view} />
+                    </Suspense>
+                </>
+            ) : teachers.length > 0 ? (
+                <>
+                    <p className="statistics-summary">
+                        Teachers by speciality ({teachers.length} total)
+                    </p>
+                    <div className="statistics-chart">
+                        <canvas
+                            ref={canvasRef}
+                            role="img"
+                            aria-label={`Teachers by speciality: ${groups.map(([name, count]) => `${name}: ${count}`).join(', ')}`}
+                        />
+                    </div>
+                </>
+            ) : (
+                <p className="statistics-summary" role="status">No teachers match the current filters.</p>
             )}
         </section>
     );

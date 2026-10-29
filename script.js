@@ -1,3 +1,4 @@
+import _ from 'lodash';
 import { randomUserMock, additionalUsers } from './FE4U-Lab2-mock.js';
 import {
     mergeAndFormatUsers,
@@ -14,7 +15,7 @@ console.log(finalUsersArray);
 
 //task 2
 
-const validUsers = finalUsersArray.filter(validateUser);
+const validUsers = _.filter(finalUsersArray, user => validateUser(user).isValid);
 console.log("validUsers: ");
 console.log(validUsers);
 

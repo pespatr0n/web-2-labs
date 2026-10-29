@@ -228,53 +228,42 @@ header .add-btn:hover {
   margin-bottom: 30px;
   font-size: 32px;
 }
-.statistics table {
-  width: 100%;
-  border-collapse: collapse;
-  text-align: center;
+.statistics .statistics-views {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 20px;
 }
-.statistics table th,
-.statistics table td {
-  padding: 15px;
-  border-bottom: 1px solid #e0e0e0;
-}
-.statistics table th {
-  font-weight: normal;
-  cursor: pointer;
-  transition: background-color 0.2s;
-}
-.statistics table th .sort-arrow {
-  opacity: 0;
-  transition: 0.2s;
-  display: inline-block;
-  padding-left: 5px;
-}
-.statistics table th:hover {
-  background-color: #f9f9f9;
-  box-shadow: inset 0 -3px 0 0 #333;
-}
-.statistics table th:hover .sort-arrow {
-  opacity: 1;
-  color: #00bcd4;
-}
-.statistics .pagination {
-  margin-top: 20px;
-  text-align: left;
-}
-.statistics .pagination a,
-.statistics .pagination span {
+.statistics .statistics-views button {
+  padding: 8px 15px;
+  border: 1px solid #f05c4d;
+  border-radius: 4px;
+  background: #ffffff;
   color: #f05c4d;
-  text-decoration: none;
-  margin-right: 10px;
-  font-weight: bold;
-  transition: 0.2s;
+  font: inherit;
+  cursor: pointer;
 }
-.statistics .pagination a:hover {
-  opacity: 0.7;
+.statistics .statistics-views button[aria-pressed=true] {
+  background: #f05c4d;
+  color: #ffffff;
 }
-.statistics .pagination a[aria-current=page] {
-  color: #333;
-  text-decoration: underline;
+.statistics .teacher-report {
+  width: 100%;
+  min-width: 0;
+  overflow: hidden;
+}
+.statistics .statistics-summary {
+  margin-bottom: 20px;
+  text-align: center;
+  color: #888;
+}
+.statistics .statistics-chart {
+  position: relative;
+  width: 100%;
+  max-width: 600px;
+  height: 460px;
+  margin: 0 auto;
 }
 
 .favorites {
@@ -405,6 +394,8 @@ footer .footer-bottom .add-btn:hover {
 
 .info-popup-content {
   width: 800px;
+  max-height: 90vh;
+  overflow-y: auto;
 }
 
 .info-popup-content .teacher-details {
@@ -472,12 +463,30 @@ footer .footer-bottom .add-btn:hover {
   font-size: 14px;
 }
 .info-popup-content .teacher-details .toggle-map {
+  padding: 0;
+  border: none;
+  background: none;
+  font-family: inherit;
   margin-top: 15px;
   font-size: 14px;
   text-decoration: underline;
   color: #00bcd4;
   cursor: pointer;
   display: inline-block;
+}
+
+.teacher-map {
+  height: 300px;
+  margin-top: 15px;
+  position: relative;
+  z-index: 0;
+  border-radius: 4px;
+}
+
+.map-unavailable {
+  margin-top: 15px;
+  font-size: 14px;
+  color: #888;
 }
 
 .add-popup-content .add-teacher-form {

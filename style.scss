@@ -272,62 +272,47 @@ header {
         font-size: 32px;
     }
 
-    table {
-        width: 100%;
-        border-collapse: collapse;
-        text-align: center;
+    .statistics-views {
+        display: flex;
+        justify-content: center;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin-bottom: 20px;
 
-        th,
-        td {
-            padding: 15px;
-            border-bottom: 1px solid $border;
-        }
-
-        th {
-            font-weight: normal;
+        button {
+            padding: 8px 15px;
+            border: 1px solid $primary;
+            border-radius: 4px;
+            background: $bg;
+            color: $primary;
+            font: inherit;
             cursor: pointer;
-            transition: background-color 0.2s;
 
-            .sort-arrow {
-                opacity: 0;
-                transition: 0.2s;
-                display: inline-block;
-                padding-left: 5px;
-            }
-
-            &:hover {
-                background-color: $light-gray;
-                box-shadow: inset 0 -3px 0 0 $text;
-
-                .sort-arrow {
-                    opacity: 1;
-                    color: #00bcd4;
-                }
+            &[aria-pressed='true'] {
+                background: $primary;
+                color: $bg;
             }
         }
     }
 
-    .pagination {
-        margin-top: 20px;
-        text-align: left;
+    .teacher-report {
+        width: 100%;
+        min-width: 0;
+        overflow: hidden;
+    }
 
-        a,
-        span {
-            color: $primary;
-            text-decoration: none;
-            margin-right: 10px;
-            font-weight: bold;
-            transition: 0.2s;
-        }
+    .statistics-summary {
+        margin-bottom: 20px;
+        text-align: center;
+        color: $gray;
+    }
 
-        a:hover {
-            opacity: 0.7;
-        }
-
-        a[aria-current='page'] {
-            color: $text;
-            text-decoration: underline;
-        }
+    .statistics-chart {
+        position: relative;
+        width: 100%;
+        max-width: 600px;
+        height: 460px;
+        margin: 0 auto;
     }
 }
 
@@ -477,6 +462,8 @@ footer {
 
 .info-popup-content {
     width: 800px;
+    max-height: 90vh;
+    overflow-y: auto;
 }
 
 .info-popup-content .teacher-details {
@@ -554,6 +541,10 @@ footer {
     }
 
     .toggle-map {
+        padding: 0;
+        border: none;
+        background: none;
+        font-family: inherit;
         margin-top: 15px;
         font-size: 14px;
         text-decoration: underline;
@@ -561,6 +552,20 @@ footer {
         cursor: pointer;
         display: inline-block;
     }
+}
+
+.teacher-map {
+    height: 300px;
+    margin-top: 15px;
+    position: relative;
+    z-index: 0;
+    border-radius: 4px;
+}
+
+.map-unavailable {
+    margin-top: 15px;
+    font-size: 14px;
+    color: $gray;
 }
 
 .add-popup-content .add-teacher-form {
