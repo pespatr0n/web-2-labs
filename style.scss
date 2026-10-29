@@ -272,62 +272,18 @@ header {
         font-size: 32px;
     }
 
-    table {
-        width: 100%;
-        border-collapse: collapse;
+    .statistics-summary {
+        margin-bottom: 20px;
         text-align: center;
-
-        th,
-        td {
-            padding: 15px;
-            border-bottom: 1px solid $border;
-        }
-
-        th {
-            font-weight: normal;
-            cursor: pointer;
-            transition: background-color 0.2s;
-
-            .sort-arrow {
-                opacity: 0;
-                transition: 0.2s;
-                display: inline-block;
-                padding-left: 5px;
-            }
-
-            &:hover {
-                background-color: $light-gray;
-                box-shadow: inset 0 -3px 0 0 $text;
-
-                .sort-arrow {
-                    opacity: 1;
-                    color: #00bcd4;
-                }
-            }
-        }
+        color: $gray;
     }
 
-    .pagination {
-        margin-top: 20px;
-        text-align: left;
-
-        a,
-        span {
-            color: $primary;
-            text-decoration: none;
-            margin-right: 10px;
-            font-weight: bold;
-            transition: 0.2s;
-        }
-
-        a:hover {
-            opacity: 0.7;
-        }
-
-        a[aria-current='page'] {
-            color: $text;
-            text-decoration: underline;
-        }
+    .statistics-chart {
+        position: relative;
+        width: 100%;
+        max-width: 600px;
+        height: 460px;
+        margin: 0 auto;
     }
 }
 

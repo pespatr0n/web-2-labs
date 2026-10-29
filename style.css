@@ -228,53 +228,17 @@ header .add-btn:hover {
   margin-bottom: 30px;
   font-size: 32px;
 }
-.statistics table {
-  width: 100%;
-  border-collapse: collapse;
+.statistics .statistics-summary {
+  margin-bottom: 20px;
   text-align: center;
+  color: #888;
 }
-.statistics table th,
-.statistics table td {
-  padding: 15px;
-  border-bottom: 1px solid #e0e0e0;
-}
-.statistics table th {
-  font-weight: normal;
-  cursor: pointer;
-  transition: background-color 0.2s;
-}
-.statistics table th .sort-arrow {
-  opacity: 0;
-  transition: 0.2s;
-  display: inline-block;
-  padding-left: 5px;
-}
-.statistics table th:hover {
-  background-color: #f9f9f9;
-  box-shadow: inset 0 -3px 0 0 #333;
-}
-.statistics table th:hover .sort-arrow {
-  opacity: 1;
-  color: #00bcd4;
-}
-.statistics .pagination {
-  margin-top: 20px;
-  text-align: left;
-}
-.statistics .pagination a,
-.statistics .pagination span {
-  color: #f05c4d;
-  text-decoration: none;
-  margin-right: 10px;
-  font-weight: bold;
-  transition: 0.2s;
-}
-.statistics .pagination a:hover {
-  opacity: 0.7;
-}
-.statistics .pagination a[aria-current=page] {
-  color: #333;
-  text-decoration: underline;
+.statistics .statistics-chart {
+  position: relative;
+  width: 100%;
+  max-width: 600px;
+  height: 460px;
+  margin: 0 auto;
 }
 
 .favorites {

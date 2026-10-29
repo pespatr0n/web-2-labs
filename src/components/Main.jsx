@@ -92,10 +92,7 @@ export default function Main({ teachers, onSelectTeacher, search, onLoadMore, lo
 
         <div className="section-separator"></div>
 
-        <Statistics
-            teachers={filteredTeachers}
-            filterKey={JSON.stringify([search, country, ageRange, gender, onlyFavorites, onlyWithPhoto])}
-        />
+        <Statistics teachers={filteredTeachers} />
 
         <div className="section-separator"></div>
 
