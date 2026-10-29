@@ -11,6 +11,9 @@ importers:
       chart.js:
         specifier: ^4.6.1
         version: 4.6.1
+      dayjs:
+        specifier: ^1.11.23
+        version: 1.11.23
       leaflet:
         specifier: 1.9.4
         version: 1.9.4
