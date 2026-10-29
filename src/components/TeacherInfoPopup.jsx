@@ -1,4 +1,5 @@
 import TeacherAvatar from './TeacherAvatar.jsx';
+import TeacherMap from './TeacherMap.jsx';
 
 export default function TeacherInfoPopup({ teacher, onClose, onToggleFavorite }) {
     return (
@@ -37,7 +38,7 @@ export default function TeacherInfoPopup({ teacher, onClose, onToggleFavorite })
                         </div>
                     </div>
                     <p className="teacher-description">{teacher.note}</p>
-                    <a href="#" className="toggle-map">toggle map</a>
+                    <TeacherMap teacher={teacher} />
                 </div>
             </section>
         </div>

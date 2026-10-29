@@ -405,6 +405,8 @@ footer .footer-bottom .add-btn:hover {
 
 .info-popup-content {
   width: 800px;
+  max-height: 90vh;
+  overflow-y: auto;
 }
 
 .info-popup-content .teacher-details {
@@ -472,12 +474,30 @@ footer .footer-bottom .add-btn:hover {
   font-size: 14px;
 }
 .info-popup-content .teacher-details .toggle-map {
+  padding: 0;
+  border: none;
+  background: none;
+  font-family: inherit;
   margin-top: 15px;
   font-size: 14px;
   text-decoration: underline;
   color: #00bcd4;
   cursor: pointer;
   display: inline-block;
+}
+
+.teacher-map {
+  height: 300px;
+  margin-top: 15px;
+  position: relative;
+  z-index: 0;
+  border-radius: 4px;
+}
+
+.map-unavailable {
+  margin-top: 15px;
+  font-size: 14px;
+  color: #888;
 }
 
 .add-popup-content .add-teacher-form {
