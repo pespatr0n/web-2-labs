@@ -228,6 +228,31 @@ header .add-btn:hover {
   margin-bottom: 30px;
   font-size: 32px;
 }
+.statistics .statistics-views {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+.statistics .statistics-views button {
+  padding: 8px 15px;
+  border: 1px solid #f05c4d;
+  border-radius: 4px;
+  background: #ffffff;
+  color: #f05c4d;
+  font: inherit;
+  cursor: pointer;
+}
+.statistics .statistics-views button[aria-pressed=true] {
+  background: #f05c4d;
+  color: #ffffff;
+}
+.statistics .teacher-report {
+  width: 100%;
+  min-width: 0;
+  overflow: hidden;
+}
 .statistics .statistics-summary {
   margin-bottom: 20px;
   text-align: center;

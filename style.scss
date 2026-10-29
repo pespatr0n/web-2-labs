@@ -272,6 +272,35 @@ header {
         font-size: 32px;
     }
 
+    .statistics-views {
+        display: flex;
+        justify-content: center;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin-bottom: 20px;
+
+        button {
+            padding: 8px 15px;
+            border: 1px solid $primary;
+            border-radius: 4px;
+            background: $bg;
+            color: $primary;
+            font: inherit;
+            cursor: pointer;
+
+            &[aria-pressed='true'] {
+                background: $primary;
+                color: $bg;
+            }
+        }
+    }
+
+    .teacher-report {
+        width: 100%;
+        min-width: 0;
+        overflow: hidden;
+    }
+
     .statistics-summary {
         margin-bottom: 20px;
         text-align: center;

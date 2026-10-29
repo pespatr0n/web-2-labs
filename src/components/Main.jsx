@@ -92,7 +92,7 @@ export default function Main({ teachers, onSelectTeacher, search, onLoadMore, lo
 
         <div className="section-separator"></div>
 
-        <Statistics teachers={filteredTeachers} />
+        <Statistics teachers={filteredTeachers} allTeachers={teachers} />
 
         <div className="section-separator"></div>
 

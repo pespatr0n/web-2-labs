@@ -8,6 +8,9 @@ importers:
 
   .:
     dependencies:
+      '@webdatarocks/webdatarocks':
+        specifier: ^1.4.23
+        version: 1.4.23
       chart.js:
         specifier: ^4.6.1
         version: 4.6.1
@@ -238,6 +241,9 @@ packages:
         optional: true
       oxc-transform-react:
         optional: true
+
+  '@webdatarocks/webdatarocks@1.4.23':
+    resolution: {integrity: sha512-7xRWdiHYO64L41RWeSc/nBRSfir61n9e2bFc9b0+wc4o0M1/kUlMLmMrreDfEmkMBFMq+XO3YLifBVF86ql+ZA==}
 
   chalk@5.6.2:
     resolution: {integrity: sha512-7NzBL0rN6fMUW+f7A6Io4h40qQlG+xGmtMxfbnH/K7TAtt8JQWVQK+6g0UXKMeVJoyV5EkkNsErQ8pVD3bLHbA==}
@@ -655,6 +661,8 @@ snapshots:
     dependencies:
       '@rolldown/pluginutils': 1.0.1
       vite: 8.3.4
+
+  '@webdatarocks/webdatarocks@1.4.23': {}
 
   chalk@5.6.2: {}
 
